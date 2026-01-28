@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: plataforma-dicox-frontend
+    env: static
+    region: oregon
+    plan: free
+    buildCommand: echo "No build required"
+    staticPublishPath: ./
+    envVars:
+      - key: PYTHON_API_URL
+        sync: false
+
+  - type: web
+    name: plataforma-dicox-backend
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python servidor_dicox.py"
+    envVars:
+      - key: PORT
+        value: 10000

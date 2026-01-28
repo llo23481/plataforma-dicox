@@ -1,0 +1,2616 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma DICOX - Remadom</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #e0f7fa, #bbdefb);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* ===== LOGIN CON EFECTOS MEJORADOS ===== */
+        .login-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            background: url('fondo-login.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(255, 255, 255, 0.6),
+                inset 0 0 15px rgba(255, 255, 255, 0.3);
+            width: 400px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 2;
+            animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transform-origin: center;
+        }
+
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.3); }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #4dabf7, #3b5bdb, #667eea, #4dabf7);
+            background-size: 400%;
+            z-index: -1;
+            border-radius: 22px;
+            animation: glowing 3s linear infinite;
+            opacity: 0.7;
+            filter: blur(10px);
+        }
+
+        @keyframes glowing {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .login-container::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #4dabf7, #3b5bdb, #667eea, #4dabf7);
+            background-size: 400%;
+            z-index: -1;
+            border-radius: 22px;
+            animation: glowing 3s linear infinite;
+            opacity: 0;
+            filter: blur(20px);
+            transition: opacity 0.3s ease;
+        }
+
+        .login-container:hover::after {
+            opacity: 0.3;
+        }
+
+        .login-title {
+            font-size: 2.5em;
+            font-weight: 800;
+            background: linear-gradient(45deg, #0d47a1, #1976d2, #2196f3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .login-title::after {
+            content: '|';
+            position: absolute;
+            right: -8px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .login-subtitle {
+            font-size: 1em;
+            color: #495057;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+
+        .login-group {
+            position: relative;
+            margin: 15px 0;
+        }
+
+        .login-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            background: white;
+            color: #2c3e50;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative;
+            z-index: 1;
+            font-weight: 500;
+        }
+
+        .login-group input::placeholder {
+            color: transparent;
+        }
+
+        .login-group input:focus {
+            outline: none;
+            border-color: #4dabf7;
+            box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .login-group input:focus ~ label,
+        .login-group input:not(:placeholder-shown) ~ label {
+            top: -25px;
+            left: 12px;
+            font-size: 0.85em;
+            color: #4dabf7;
+            background: white;
+            padding: 0 8px;
+            border-radius: 4px;
+        }
+
+        .login-group label {
+            position: absolute;
+            top: 14px;
+            left: 16px;
+            color: #6c757d;
+            font-size: 1em;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+
+        .login-container button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #4dabf7, #3b5bdb);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 
+                0 6px 20px rgba(59, 91, 219, 0.5),
+                0 0 15px rgba(77, 171, 247, 0.3);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+
+        .login-container button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .login-container button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .login-container button:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 
+                0 12px 30px rgba(59, 91, 219, 0.7),
+                0 0 25px rgba(77, 171, 247, 0.5);
+            background: linear-gradient(135deg, #3b5bdb, #4dabf7);
+        }
+
+        .login-container button:active {
+            transform: translateY(-2px) scale(0.98);
+            box-shadow: 0 4px 15px rgba(59, 91, 219, 0.4);
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.7);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        #mensaje-error {
+            color: #dc3545;
+            margin-top: 15px;
+            min-height: 22px;
+            font-weight: 600;
+            font-size: 14px;
+            animation: shake 0.5s;
+            transform: translateX(0);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        #particles-js {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* ===== MENÚ PRINCIPAL 3D ===== */
+        .main-menu {
+            display: none;
+            height: 100vh;
+            padding: 40px 20px;
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        .menu-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .menu-header h1 {
+            font-size: 2.8em;
+            color: #0d47a1;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #0d47a1, #1976d2, #2196f3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 10px rgba(33, 150, 243, 0.2);
+        }
+
+        .menu-header p {
+            color: #6c757d;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .menu-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.15),
+                0 0 20px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+        }
+
+        .menu-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+            z-index: 1;
+        }
+
+        .menu-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .menu-card.gestion {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .menu-card.creacion {
+            background: linear-gradient(135deg, #4dabf7 0%, #3b5bdb 100%);
+        }
+
+        .menu-card:hover {
+            transform: translateY(-15px) scale(1.03) rotateX(5deg);
+            box-shadow: 
+                0 20px 50px rgba(0, 0, 0, 0.3),
+                0 0 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .menu-card:active {
+            transform: translateY(-5px) scale(0.98);
+        }
+
+        .menu-card i {
+            font-size: 5em;
+            margin-bottom: 20px;
+            display: block;
+            color: white;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .menu-card h2 {
+            font-size: 2em;
+            color: white;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .menu-card p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .menu-card .btn-enter {
+            background: white;
+            color: #2c3e50;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-card .btn-enter:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .menu-card .btn-enter:active {
+            transform: translateY(0);
+        }
+
+        /* ===== MAIN APP ===== */
+        .app-screen {
+            display: none;
+            animation: fadeIn 0.6s ease forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            padding: 14px 24px;
+            background: linear-gradient(to right, #0056b3, #003f88);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            position: relative;
+            justify-content: space-between;
+        }
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .top-bar-center {
+            flex-grow: 1;
+            text-align: center;
+        }
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .top-bar button {
+            background: white;
+            border: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            color: #007bff;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        .top-bar button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        #recibo-texto {
+            font-size: 1.5em;
+            font-weight: 700;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        #importe-texto {
+            font-size: 1.9em;
+            font-weight: 700;
+            color: #ffcc00;
+            text-shadow: 0 0 10px rgba(255,204,0,0.5);
+        }
+
+        .form-container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 28px;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+        .form-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .form-group {
+            flex: 1;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.95em;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.25s ease;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
+            outline: none;
+        }
+        .form-container button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(to right, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 22px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(40,167,69,0.3);
+        }
+        .form-container button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(40,167,69,0.4);
+        }
+        .form-container button:active {
+            transform: translateY(0);
+        }
+        #mensaje {
+            margin-top: 18px;
+            text-align: center;
+            font-weight: 600;
+            min-height: 24px;
+        }
+
+        #contenedor-tabla {
+            display: none;
+            margin-top: 15px;
+            animation: slideDown 0.4s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #toggle-tabla {
+            background: linear-gradient(to right, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 3px 8px rgba(40,167,69,0.4);
+        }
+        #toggle-tabla:hover {
+            transform: rotate(180deg) scale(1.1);
+            box-shadow: 0 5px 15px rgba(40,167,69,0.6);
+        }
+
+        .tabla-servicios {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.9em;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .tabla-servicios th {
+            background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+            color: #343a40;
+            font-weight: 600;
+            font-size: 0.8em;
+            padding: 10px 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .tabla-servicios td {
+            padding: 8px 6px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        .tabla-servicios input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 0.95em;
+            text-align: center;
+        }
+        .tabla-servicios input:focus {
+            background: rgba(0,123,255,0.05);
+        }
+        .tabla-servicios button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .tabla-servicios button:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        .botones-tabla {
+            margin-top: 10px;
+            display: flex;
+            gap: 6px;
+            justify-content: flex-start;
+        }
+        .botones-tabla button {
+            padding: 2px 6px;
+            font-size: 0.75em;
+            border-radius: 4px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .botones-tabla button:nth-child(1) {
+            background: #17a2b8;
+        }
+        .botones-tabla button:nth-child(2) {
+            background: #dc3545;
+        }
+        .botones-tabla button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* ===== SECCIÓN DE GESTIÓN - AMPLIADA ===== */
+        #gestionScreen .form-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+
+        .filtros-seccion {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr) auto;
+            gap: 12px;
+            margin-bottom: 20px;
+            background: rgba(248, 249, 250, 0.9);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            align-items: end;
+        }
+
+        .filtro-grupo {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .filtro-grupo label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.85em;
+        }
+
+        .filtro-select, .filtro-input {
+            padding: 6px 8px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 12px;
+            background: white;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            height: 32px;
+        }
+
+        .filtro-input {
+            cursor: text;
+        }
+
+        .filtro-select:focus, .filtro-input:focus {
+            outline: none;
+            border-color: #4dabf7;
+            box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.15);
+        }
+
+        .btn-filtro-resumen {
+            padding: 6px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            background: white;
+            color: #2c3e50;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            height: 32px;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-filtro-resumen:hover {
+            background: #f8f9fa;
+            border-color: #007bff;
+            color: #007bff;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        }
+
+        .btn-filtro-resumen:active {
+            transform: translateY(0);
+        }
+
+        .tabla-transacciones-contenedor {
+            overflow-x: auto;
+            margin-bottom: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            background: white;
+            padding: 15px;
+        }
+
+        .tabla-transacciones {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+
+        .tabla-transacciones th {
+            background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+            color: #343a40;
+            font-weight: 700;
+            font-size: 0.85em;
+            padding: 12px 10px;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #dee2e6;
+            position: sticky;
+            top: 0;
+        }
+
+        .tabla-transacciones td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9em;
+            color: #495057;
+        }
+
+        .tabla-transacciones tr:hover {
+            background: rgba(77, 171, 247, 0.05);
+            transform: scale(1.005);
+            transition: all 0.2s ease;
+        }
+
+        .tabla-transacciones tr:last-child td {
+            border-bottom: none;
+        }
+
+        .tabla-transacciones td:nth-child(1),
+        .tabla-transacciones th:nth-child(1) {
+            width: 110px;
+        }
+
+        .tabla-transacciones td:nth-child(2),
+        .tabla-transacciones th:nth-child(2) {
+            width: 140px;
+        }
+
+        .tabla-transacciones td:nth-child(3),
+        .tabla-transacciones th:nth-child(3) {
+            width: 90px;
+            text-align: center;
+        }
+
+        .tabla-transacciones td:nth-child(4),
+        .tabla-transacciones th:nth-child(4) {
+            min-width: 180px;
+        }
+
+        .tabla-transacciones td:nth-child(5),
+        .tabla-transacciones th:nth-child(5) {
+            min-width: 150px;
+        }
+
+        .tabla-transacciones td:nth-child(6),
+        .tabla-transacciones th:nth-child(6) {
+            width: 110px;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .tabla-transacciones td:nth-child(7),
+        .tabla-transacciones th:nth-child(7) {
+            width: 90px;
+            text-align: center;
+        }
+
+        .tabla-transacciones td:nth-child(8),
+        .tabla-transacciones th:nth-child(8) {
+            width: 160px;
+            text-align: center;
+        }
+
+        .estado-pagada {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            background: rgba(40, 167, 69, 0.15);
+            color: #28a745;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 0.8em;
+        }
+
+        .estado-pagada::before {
+            content: '✓';
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .estado-anulada {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            background: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 0.8em;
+        }
+
+        .estado-anulada::before {
+            content: '✗';
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .acciones-contenedor {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn-accion-simple {
+            padding: 4px 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+            color: #2c3e50;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn-accion-simple:hover {
+            background: #f8f9fa;
+            border-color: #007bff;
+            color: #007bff;
+        }
+
+        .dropdown-acciones {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-btn {
+            padding: 3px 6px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75em;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            background: white;
+            color: #2c3e50;
+            min-width: 50px;
+        }
+
+        .dropdown-btn:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            min-width: 100px;
+            margin-top: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            font-size: 0.8em;
+        }
+
+        .dropdown-content.show {
+            display: block;
+            animation: slideDownMenu 0.2s ease;
+        }
+
+        @keyframes slideDownMenu {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-item {
+            padding: 6px 10px;
+            cursor: pointer;
+            color: #2c3e50;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dropdown-item:hover {
+            background: #f8f9fa;
+            color: #007bff;
+        }
+
+        .dropdown-item.anular {
+            color: #dc3545;
+        }
+
+        .dropdown-item.anular:hover {
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        .dropdown-item.eliminar {
+            color: #e74c3c;
+        }
+
+        .dropdown-item.eliminar:hover {
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .dropdown-item.imprimir {
+            color: #6f42c1;
+        }
+
+        .dropdown-item.imprimir:hover {
+            background: rgba(111, 66, 193, 0.1);
+        }
+
+        .resumen-transacciones {
+            display: flex;
+            justify-content: flex-end;
+            gap: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .resumen-item {
+            text-align: right;
+        }
+
+        .resumen-label {
+            display: block;
+            font-size: 0.95em;
+            color: #6c757d;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .resumen-valor {
+            display: block;
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .resumen-valor.importe {
+            color: #28a745;
+        }
+
+        /* Detalles desplegables */
+        .fila-detalles {
+            display: none;
+            background: rgba(248, 249, 250, 0.5);
+            border-top: 1px solid #dee2e6;
+            border-bottom: 1px solid #dee2e6;
+            animation: slideDownDetails 0.3s ease;
+        }
+
+        @keyframes slideDownDetails {
+            from {
+                opacity: 0;
+                max-height: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                max-height: 500px;
+                transform: translateY(0);
+            }
+        }
+
+        .detalles-contenido {
+            padding: 15px 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .detalle-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .detalle-label {
+            font-size: 0.75em;
+            color: #6c757d;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detalle-valor {
+            font-size: 0.9em;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .detalle-valor.estado-pagada,
+        .detalle-valor.estado-anulada {
+            font-size: 0.85em;
+            display: inline-block;
+            padding: 2px 6px;
+        }
+
+        /* Botón Modificar Estudio */
+        .btn-modificar {
+            background: linear-gradient(to right, #ff9800, #ff5722);
+            color: white;
+        }
+
+        .btn-modificar:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(255, 87, 34, 0.4);
+        }
+
+        /* Botón Resumen - POSICIONADO EN FILTROS */
+        .btn-resumen-modal {
+            padding: 8px 16px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            background: white;
+            color: #2c3e50;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            white-space: nowrap;
+        }
+
+        .btn-resumen-modal:hover {
+            background: #f8f9fa;
+            border-color: #007bff;
+            color: #007bff;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn-resumen-modal:active {
+            transform: scale(0.98);
+        }
+
+        /* Modal de Resumen */
+        .modal-resumen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-contenido {
+            background: white;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 1000px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 15px;
+        }
+
+        .modal-header h1 {
+            font-size: 1.6em;
+            color: #0d47a1;
+            margin-bottom: 5px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.4em;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .modal-header .rango-fechas {
+            font-size: 1.1em;
+            color: #007bff;
+            font-weight: 700;
+            margin: 8px 0;
+        }
+
+        .modal-header .total-label {
+            font-size: 1.2em;
+            color: #2c3e50;
+            font-weight: 700;
+            margin-top: 15px;
+            border-top: 2px solid #e9ecef;
+            padding-top: 10px;
+        }
+
+        .modal-filtros {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .modal-filtro-grupo {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .modal-filtro-grupo label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9em;
+        }
+
+        .modal-filtro-grupo select, .modal-filtro-grupo input {
+            padding: 8px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 13px;
+            background: white;
+            color: #2c3e50;
+            transition: all 0.25s ease;
+        }
+
+        .modal-filtro-grupo select:focus, .modal-filtro-grupo input:focus {
+            outline: none;
+            border-color: #4dabf7;
+            box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.15);
+        }
+
+        .resumen-tabla-contenedor {
+            margin-top: 15px;
+            overflow-x: auto;
+        }
+
+        .resumen-tabla {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .resumen-tabla th {
+            background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+            color: #343a40;
+            font-weight: 700;
+            font-size: 0.9em;
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .resumen-tabla td {
+            padding: 8px 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.95em;
+            color: #495057;
+        }
+
+        .resumen-tabla tr:last-child td {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 1.1em;
+            background: #f8f9fa;
+        }
+
+        .resumen-tabla tr:last-child td:first-child {
+            color: #0d47a1;
+        }
+
+        .resumen-tabla tr:last-child td:last-child {
+            color: #28a745;
+            font-size: 1.2em;
+        }
+
+        .modal-footer {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .btn-modal {
+            padding: 8px 20px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            background: white;
+            color: #2c3e50;
+            transition: all 0.3s ease;
+        }
+
+        .btn-modal:hover {
+            background: #f8f9fa;
+            border-color: #007bff;
+            color: #007bff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .btn-modal:active {
+            transform: translateY(0);
+        }
+
+        .base-devengo {
+            margin-top: 20px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 0.85em;
+            color: #6c757d;
+            text-align: right;
+            border-left: 4px solid #007bff;
+        }
+
+        /* CLIENTES FIJOS EN ORDEN ESPECÍFICO */
+        .cliente-fijo {
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Pantalla de login -->
+<div id="loginScreen" class="login-screen">
+    <div class="login-container">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div class="login-title" id="typing-title">DICOX</div>
+            <div class="login-subtitle">Sistema de Gestión Médica</div>
+        </div>
+        
+        <div class="login-group">
+            <input type="text" id="usuario" placeholder="Usuario" autocomplete="off">
+            <label>👤 Usuario</label>
+        </div>
+        
+        <div class="login-group">
+            <input type="password" id="contrasena" placeholder="Contraseña">
+            <label>🔒 Contraseña</label>
+        </div>
+        
+        <button onclick="iniciarSesion()">Iniciar Sesión</button>
+        <p id="mensaje-error"></p>
+    </div>
+
+    <div id="particles-js"></div>
+</div>
+
+<!-- Menú Principal -->
+<div id="mainMenu" class="main-menu">
+    <div class="menu-header">
+        <h1>🏥 DICOX - Remadom</h1>
+        <p>Sistema de Gestión Médica Integral</p>
+    </div>
+
+    <div class="menu-grid">
+        <div class="menu-card gestion" onclick="irAGestion()">
+            <i>📊</i>
+            <h2>Gestión</h2>
+            <p>Administre pacientes, estudios, historiales y reportes médicos. Visualice estadísticas y controle el flujo de trabajo.</p>
+            <button class="btn-enter">Entrar <span>→</span></button>
+        </div>
+
+        <div class="menu-card creacion" onclick="irACreacion()">
+            <i>📝</i>
+            <h2>Creación</h2>
+            <p>Genere nuevos estudios médicos, registre pacientes, cree recibos de venta y gestione la facturación de servicios.</p>
+            <button class="btn-enter">Entrar <span>→</span></button>
+        </div>
+    </div>
+</div>
+
+<!-- Aplicación principal (Creación) -->
+<div id="appScreen" class="app-screen">
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <button onclick="volverAlMenu()" title="Volver al menú">
+                <i style="font-size: 1.2em;">←</i>
+            </button>
+            <span id="recibo-texto">Recibo de Venta #1</span>
+        </div>
+        
+        <div class="top-bar-center">
+            <div style="font-size: 0.95em; color: #e3f2fd; margin-bottom: 4px; font-weight: 600;">Importe</div>
+            <div id="importe-texto">RD$0.00</div>
+        </div>
+        
+        <div class="top-bar-right">
+            <button onclick="cerrarSesion()" style="background: linear-gradient(to right, #dc3545, #ff6b6b); width: auto; padding: 0 15px;">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="cliente">Cliente:</label>
+                <input list="clientes-predefinidos" id="cliente" placeholder="Seleccione o escriba" oninput="actualizarDireccion()">
+                <datalist id="clientes-predefinidos">
+                    <option value="ARS APS Cliente">
+                    <option value="ARS BANRESERVAS Cliente">
+                    <option value="ARS CMD Cliente">
+                    <option value="ARS MONUMENTAL Cliente">
+                    <option value="ARS PENSIONADO Cliente">
+                    <option value="ARS RENACER Cliente">
+                    <option value="ARS SIMAG Cliente">
+                    <option value="ARS UNIVERSAL Cliente">
+                    <option value="CD Cliente">
+                    <option value="CONTRIBUTIVO Cliente">
+                    <option value="COPAGO CENTRAL Cliente">
+                    <option value="COPAGO UNIVERSAL Cliente">
+                    <option value="COPAGO VELEZ Cliente">
+                    <option value="EFECTIVO CENTRAL Cliente">
+                    <option value="IDOPPRIL Cliente">
+                    <option value="PACIENTE PRIVADO CENTRAL Cliente">
+                    <option value="PACIENTE PRIVADO VELEZ Cliente">
+                    <option value="SENASA CONTIBUTIVO Cliente">
+                    <option value="SENASA CONTRIBUTIVO Cliente">
+                    <option value="SENASA SUBSIDIADO Cliente">
+                    <option value="ASEMAP Cliente">
+                </datalist>
+            </div>
+            <div class="form-group">
+                <label for="direccion">Dirección de Facturación:</label>
+                <input type="text" id="direccion" placeholder="Nombre del paciente">
+            </div>
+            <div class="form-group">
+                <label for="fecha-recibo">Fecha del recibo de venta:</label>
+                <input type="date" id="fecha-recibo">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="numero-recibo">N.° de recibo de venta:</label>
+                <input type="text" id="numero-recibo" readonly>
+            </div>
+            <div class="form-group">
+                <label for="clase">Clase:</label>
+                <input list="clases-predefinidas" id="clase" placeholder="Seleccione una clase">
+                <datalist id="clases-predefinidas">
+                    <option value="Administracion">
+                    <option value="Unidad Central">
+                    <option value="Unidad JB">
+                    <option value="Unidad Velez">
+                </datalist>
+            </div>
+            <div style="visibility: hidden;"></div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="metodo-pago">Método de pago:</label>
+                <input list="metodos-pago" id="metodo-pago" placeholder="Seleccione método">
+                <datalist id="metodos-pago">
+                    <option value="Cash">
+                    <option value="Cheque">
+                    <option value="Credit Card">
+                    <option value="Direct Debit">
+                    <option value="Transferencia">
+                </datalist>
+            </div>
+            <div class="form-group">
+                <label for="referencia">N.º de referencia:</label>
+                <input type="text" id="referencia" placeholder="Número de referencia">
+            </div>
+            <div style="visibility: hidden;"></div>
+        </div>
+
+        <div style="margin-top: 20px; display: flex; align-items: center;">
+            <button id="toggle-tabla" onclick="toggleTabla()">➕</button>
+            <span style="margin-left: 12px; color: #495057; font-weight: 600; font-size: 1.05em;">Detalles del Servicio</span>
+        </div>
+
+        <div id="contenedor-tabla">
+            <div style="overflow-x: auto;">
+                <table id="tabla-servicios" class="tabla-servicios">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Fecha</th>
+                            <th>Prodct/Servicio</th>
+                            <th>Descrp</th>
+                            <th>CANT.</th>
+                            <th>Tarifa</th>
+                            <th>Importe</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpo-tabla"></tbody>
+                </table>
+            </div>
+            
+            <div class="botones-tabla">
+                <button type="button" onclick="agregarLinea()">➕</button>
+                <button type="button" onclick="borrarTodasLineas()">🗑️</button>
+            </div>
+        </div>
+
+        <button id="btn-guardar" onclick="crearEstudio()">Crear Estudio</button>
+        <p id="mensaje"></p>
+
+        <div id="panel-resumen" style="display: none; margin-top: 20px; text-align: right; animation: fadeIn 0.4s ease;">
+            <div style="font-size: 0.95em; color: #6c757d; margin-bottom: 4px;">Subtotal</div>
+            <div id="subtotal-texto" style="font-size: 1.3em; font-weight: bold; color: #28a745; margin-bottom: 10px;">RD$0.00</div>
+            
+            <div style="font-size: 0.95em; color: #6c757d; margin-bottom: 4px;">Total</div>
+            <div id="total-texto" style="font-size: 1.3em; font-weight: bold; color: #007bff; margin-bottom: 10px;">RD$0.00</div>
+            
+            <div style="font-size: 0.95em; color: #6c757d; margin-bottom: 4px;">Importe recibido</div>
+            <input type="number" id="importe-recibido" step="0.01" min="0" value="0" 
+                   onchange="actualizarImporteTotal()" 
+                   style="width: 120px; padding: 6px; border: 1px solid #ced4da; border-radius: 6px; text-align: right; font-size: 1.1em;">
+            
+            <div style="font-size: 0.95em; color: #6c757d; margin-top: 10px; margin-bottom: 4px;">Saldo pendiente</div>
+            <div id="saldo-texto" style="font-size: 1.3em; font-weight: bold; color: #dc3545;">RD$0.00</div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Pantalla de Gestión - TRANSACCIONES DE VENTA -->
+<div id="gestionScreen" class="app-screen">
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <button onclick="volverAlMenu()" title="Volver al menú">
+                <i style="font-size: 1.2em;">←</i>
+            </button>
+            <span>📊 Transacciones de Venta</span>
+        </div>
+        
+        <div class="top-bar-center">
+            <div style="font-size: 0.95em; color: #e3f2fd; margin-bottom: 4px; font-weight: 600;">Bienvenido</div>
+            <div style="color: white; font-weight: 600;">Administrador</div>
+        </div>
+        
+        <div class="top-bar-right">
+            <button onclick="cerrarSesion()" style="background: linear-gradient(to right, #dc3545, #ff6b6b); width: auto; padding: 0 15px;">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <!-- Filtros - MÁS CORTOS Y COMPACTOS CON BOTÓN RESUMEN -->
+        <div class="filtros-seccion">
+            <div class="filtro-grupo">
+                <label for="filtro-tipo">Tipo:</label>
+                <select id="filtro-tipo" class="filtro-select" onchange="filtrarTransacciones()">
+                    <option value="todos">Todas las transacciones</option>
+                    <option value="facturas">Facturas</option>
+                    <option value="cotizaciones">Cotizaciones</option>
+                    <option value="ordenes-cambio">Órdenes de cambio</option>
+                    <option value="notas-credito">Notas de crédito</option>
+                    <option value="recibos-venta" selected>Recibos de venta</option>
+                    <option value="ingresos-sin-facturar">Ingresos sin facturar</option>
+                    <option value="dinero-recibido">Dinero recibido</option>
+                    <option value="pagado-recientemente">Pagado recientemente</option>
+                </select>
+            </div>
+
+            <div class="filtro-grupo">
+                <label for="filtro-fecha">Fecha:</label>
+                <select id="filtro-fecha" class="filtro-select" onchange="filtrarTransacciones()">
+                    <option value="todo" selected>Todo</option>
+                    <option value="personalizadas">Fechas personalizadas</option>
+                    <option value="hoy">Hoy</option>
+                    <option value="ayer">Ayer</option>
+                    <option value="esta-semana">Esta semana</option>
+                    <option value="semana-pasada">Semana pasada</option>
+                    <option value="este-mes">Este mes</option>
+                    <option value="mes-pasado">Mes pasado</option>
+                    <option value="ultimos-30-dias">Últimos 30 días</option>
+                    <option value="este-trimestre">Este trimestre</option>
+                    <option value="trimestre-pasado">Trimestre pasado</option>
+                    <option value="ultimos-3-meses">Últimos 3 meses</option>
+                    <option value="ultimos-6-meses">Últimos 6 meses</option>
+                    <option value="ultimos-12-meses">Últimos 12 meses</option>
+                    <option value="ano-a-la-fecha">Año a la fecha</option>
+                    <option value="este-ano">Este año</option>
+                </select>
+            </div>
+
+            <div class="filtro-grupo">
+                <label for="filtro-cliente">Cliente:</label>
+                <select id="filtro-cliente" class="filtro-select" onchange="filtrarTransacciones()">
+                    <option value="todos" selected>Todo</option>
+                    <option value="ars-aps">ARS APS</option>
+                    <option value="ars-banreservas">ARS BANRESERVAS</option>
+                    <option value="ars-cmd">ARS CMD</option>
+                    <option value="ars-monumental">ARS MONUMENTAL</option>
+                    <option value="ars-pensionado">ARS PENSIONADO</option>
+                    <option value="ars-renacer">ARS RENACER</option>
+                    <option value="ars-simag">ARS SIMAG</option>
+                    <option value="ars-universal">ARS UNIVERSAL</option>
+                    <option value="cd">CD</option>
+                    <option value="contributivo">CONTRIBUTIVO</option>
+                    <option value="copago-central">COPAGO CENTRAL</option>
+                    <option value="copago-universal">COPAGO UNIVERSAL</option>
+                    <option value="copago-velez">COPAGO VELEZ</option>
+                    <option value="efectivo-central">EFECTIVO CENTRAL</option>
+                    <option value="idoppril">IDOPPRIL</option>
+                    <option value="nelson-suero">Nelson Suero Gomez</option>
+                    <option value="paciente-privado-central">PACIENTE PRIVADO CENTRAL</option>
+                    <option value="paciente-privado-velez">PACIENTE PRIVADO VELEZ</option>
+                    <option value="sena-sa-contibutivo">SENASA CONTIBUTIVO</option>
+                    <option value="sena-sa-contributivo">SENASA CONTRIBUTIVO</option>
+                    <option value="sena-sa-subsidiado">SENASA SUBSIDIADO</option>
+                    <option value="asemap">ASEMAP</option>
+                </select>
+            </div>
+
+            <div class="filtro-grupo">
+                <label for="filtro-recibo">Recibo N.º:</label>
+                <input type="number" id="filtro-recibo" class="filtro-input" placeholder="N.º" oninput="filtrarTransacciones()">
+            </div>
+
+            <div class="filtro-grupo">
+                <label>&nbsp;</label>
+                <button class="btn-filtro-resumen" onclick="abrirModalResumen()">Resumen</button>
+            </div>
+        </div>
+
+        <!-- Tabla de Transacciones -->
+        <div class="tabla-transacciones-contenedor">
+            <table class="tabla-transacciones">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>N.º</th>
+                        <th>Cliente</th>
+                        <th>Nota</th>
+                        <th>Importe</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpo-transacciones">
+                    <!-- Los datos se llenarán automáticamente -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Resumen -->
+        <div class="resumen-transacciones">
+            <div class="resumen-item">
+                <span class="resumen-label">Total de transacciones:</span>
+                <span id="total-transacciones" class="resumen-valor">0</span>
+            </div>
+            <div class="resumen-item">
+                <span class="resumen-label">Importe total:</span>
+                <span id="importe-total" class="resumen-valor">RD$0.00</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Resumen -->
+<div id="modalResumen" class="modal-resumen">
+    <div class="modal-contenido">
+        <div class="modal-header">
+            <h1>RESONANCIA MAGNETICA DOMINICANA, SRL</h1>
+            <h2>Resumen de ventas por cliente</h2>
+            <div class="rango-fechas" id="rango-fechas">1-31 enero, 2026</div>
+            <div class="total-label">Total</div>
+        </div>
+
+        <div class="modal-filtros">
+            <div class="modal-filtro-grupo">
+                <label for="periodo-informe">Período del informe:</label>
+                <select id="periodo-informe" class="filtro-select" onchange="generarResumen()">
+                    <option value="hoy">Hoy</option>
+                    <option value="semana">Esta Semana</option>
+                    <option value="mes" selected>Este Mes</option>
+                    <option value="trimestre">Este Trimestre</option>
+                    <option value="ano">Este Año</option>
+                </select>
+            </div>
+
+            <div class="modal-filtro-grupo">
+                <label for="fecha-desde">Desde:</label>
+                <input type="date" id="fecha-desde" class="filtro-input" onchange="generarResumen()">
+            </div>
+
+            <div class="modal-filtro-grupo">
+                <label for="fecha-hasta">Hasta:</label>
+                <input type="date" id="fecha-hasta" class="filtro-input" onchange="generarResumen()">
+            </div>
+        </div>
+
+        <div class="resumen-tabla-contenedor">
+            <table class="resumen-tabla">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th style="text-align: right;">Importe (RD$)</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpo-resumen">
+                    <!-- Los datos se llenarán automáticamente -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="base-devengo" id="base-devengo">
+            Base de devengo: <span id="fecha-devengo">jueves, 29 de enero de 2026 02:24 p. m. GMT-04:00</span>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-modal" onclick="imprimirResumen()">Imprimir</button>
+            <button class="btn-modal" onclick="exportarResumen()">Exportar</button>
+            <button class="btn-modal" onclick="cerrarModalResumen()" style="background: #dc3545; color: white; border-color: #dc3545;">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<datalist id="servicios-predefinidos">
+    <option value="CONTRASTE">
+    <option value="DOPPLRS DE OTROS VASOS PERIFERICOS DELCUELLO NCOC">
+    <option value="DOPPLRS DE VASOS DEL CUELLO (CAROTIDA, VERTEBRALES, YUGULAR)">
+    <option value="DOPPLRS VASOS ARTERIALES DE MIEMBROS INFERIORES">
+    <option value="DOPPLRS VASOS ARTERIALES DE MIEMBROS SUPERIORES">
+    <option value="DOPPLRS VASOS RENALES">
+    <option value="DOPPLRS VASOS VENOSOS DE MIEMBROS INFERIORES">
+    <option value="DOPPLRS VASOS VENOSOS DE MIEMBROS SUPERIORES">
+    <option value="IRM">
+    <option value="PAGO DE CD">
+    <option value="SONOGRAFIA  OBSTETRICACONPERFIL BIOFISICO">
+    <option value="SONOGRAFIA ABDOMINAL">
+    <option value="SONOGRAFIA BAZO,QORTA O ADRANALES">
+    <option value="SONOGRAFIA DE MAMA">
+    <option value="SONOGRAFIA DE TEJIDOS BLANDOS EN LAS EXTREMIDADES SUPERIORES MUSCULO ESQUELETICO">
+    <option value="SONOGRAFIA DIAGNOSTICA DE TEJIDOS BLANDOS DE PARED ABDOMINAL">
+    <option value="SONOGRAFIA ECOCARDIOGRAFIA MODO M Y BIDIMENSIONAL">
+    <option value="SONOGRAFIA OBSTETRICA">
+    <option value="SONOGRAFIA PELVICA">
+    <option value="SONOGRAFIA PROSTATICA">
+    <option value="SONOGRAFIA TESTICULAR">
+    <option value="SONOGRAFIA TIROIDES">
+    <option value="SONOGRAFIA TRANSFONTANELAR">
+    <option value="SONOGRAFIA TRANSFONTANELAR CON ANALISIS DOPPER">
+    <option value="SONOGRAFIA TRANSRECTAL">
+    <option value="SONOGRAFIA TRANSVAGINAL">
+</datalist>
+
+<script>
+    // === Efectos del Login ===
+    function typeWriter(text, i, fnCallback) {
+        const typingTitle = document.getElementById('typing-title');
+        if (i < (text.length)) {
+            typingTitle.innerHTML = text.substring(0, i+1) + '<span class="typing-cursor">|</span>';
+            setTimeout(function() {
+                typeWriter(text, i + 1, fnCallback);
+            }, 100);
+        } else if (typeof fnCallback == 'function') {
+            setTimeout(fnCallback, 700);
+        }
+    }
+
+    function createRipple(event) {
+        const button = event.currentTarget;
+        const ripple = document.createElement('span');
+        const rect = button.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = event.clientX - rect.left - size / 2;
+        const y = event.clientY - rect.top - size / 2;
+        
+        ripple.style.width = ripple.style.height = `${size}px`;
+        ripple.style.left = `${x}px`;
+        ripple.style.top = `${y}px`;
+        ripple.classList.add('ripple');
+        
+        button.appendChild(ripple);
+        
+        setTimeout(() => {
+            ripple.remove();
+        }, 600);
+    }
+
+    // === Estado global ===
+    let numRecibo = 1;
+    let contadorFilas = 0;
+    let transacciones = [];
+    let estudioEditando = null;
+    // Lista de clientes en orden específico
+    const clientesOrden = [
+        "ARS APS", "ARS BANRESERVAS", "ARS PENSIONADO", "ARS RENACER", "CD", 
+        "CONTRIBUTIVO", "COPAGO CENTRAL", "EFECTIVO CENTRAL", "IDOPPRIL", 
+        "SENASA CONTIBUTIVO", "SENASA CONTRIBUTIVO"
+    ];
+
+    // === LOGIN ===
+    function iniciarSesion() {
+        const usuario = document.getElementById('usuario').value.trim();
+        const contrasena = document.getElementById('contrasena').value;
+        const error = document.getElementById('mensaje-error');
+
+        if (usuario === "admin" && contrasena === "12345") {
+            localStorage.setItem('dicox_sesion', 'activa');
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainMenu').style.display = 'block';
+        } else {
+            error.textContent = "Usuario o contraseña incorrectos";
+            error.style.animation = 'shake 0.5s';
+            setTimeout(() => {
+                error.style.animation = '';
+            }, 500);
+        }
+    }
+
+    // === NAVEGACIÓN MENÚ PRINCIPAL ===
+    function irAGestion() {
+        document.getElementById('mainMenu').style.display = 'none';
+        document.getElementById('gestionScreen').style.display = 'block';
+        cargarTransacciones();
+        inicializarFechasResumen();
+    }
+
+    function irACreacion() {
+        document.getElementById('mainMenu').style.display = 'none';
+        document.getElementById('appScreen').style.display = 'block';
+        cargarRecibo();
+        inicializarFechaHoy();
+        estudioEditando = null;
+        document.getElementById('btn-guardar').textContent = 'Crear Estudio';
+        document.getElementById('btn-guardar').className = '';
+        document.getElementById('btn-guardar').classList.add('form-container', 'button');
+    }
+
+    function volverAlMenu() {
+        document.getElementById('appScreen').style.display = 'none';
+        document.getElementById('gestionScreen').style.display = 'none';
+        document.getElementById('mainMenu').style.display = 'block';
+        estudioEditando = null;
+    }
+
+    function cerrarSesion() {
+        localStorage.removeItem('dicox_sesion');
+        document.getElementById('appScreen').style.display = 'none';
+        document.getElementById('gestionScreen').style.display = 'none';
+        document.getElementById('mainMenu').style.display = 'none';
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('usuario').value = "";
+        document.getElementById('contrasena').value = "";
+        document.getElementById('mensaje-error').textContent = "";
+    }
+
+    // === MODAL RESUMEN ===
+    function abrirModalResumen() {
+        document.getElementById('modalResumen').style.display = 'block';
+        generarResumen();
+    }
+
+    function cerrarModalResumen() {
+        document.getElementById('modalResumen').style.display = 'none';
+    }
+
+    function inicializarFechasResumen() {
+        const hoy = new Date();
+        const yyyy = hoy.getFullYear();
+        const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dd = String(hoy.getDate()).padStart(2, '0');
+        
+        document.getElementById('fecha-desde').value = `${yyyy}-${mm}-${dd}`;
+        document.getElementById('fecha-hasta').value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    function generarResumen() {
+        // CARGAR DATOS ACTUALIZADOS DE LOCALSTORAGE
+        transacciones = JSON.parse(localStorage.getItem('estudios_dicox') || '[]');
+        
+        const periodo = document.getElementById('periodo-informe').value;
+        const hoy = new Date();
+        let fechaInicio, fechaFin, rangoTexto;
+        
+        // Calcular rango de fechas según el período seleccionado
+        switch(periodo) {
+            case 'hoy':
+                fechaInicio = new Date(hoy);
+                fechaFin = new Date(hoy);
+                const diaHoy = hoy.getDate();
+                const mesHoy = hoy.toLocaleString('es-ES', { month: 'long' });
+                const anioHoy = hoy.getFullYear();
+                rangoTexto = `${diaHoy} ${mesHoy}, ${anioHoy}`;
+                break;
+            case 'semana':
+                fechaInicio = new Date(hoy);
+                fechaInicio.setDate(hoy.getDate() - hoy.getDay()); // Domingo
+                fechaFin = new Date(fechaInicio);
+                fechaFin.setDate(fechaInicio.getDate() + 6); // Sábado
+                rangoTexto = `${fechaInicio.getDate()}-${fechaFin.getDate()} ${mesHoy}, ${anioHoy}`;
+                break;
+            case 'mes':
+                fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+                fechaFin = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+                rangoTexto = `1-${fechaFin.getDate()} ${mesHoy}, ${anioHoy}`;
+                break;
+            case 'trimestre':
+                const trimestre = Math.floor(hoy.getMonth() / 3);
+                fechaInicio = new Date(hoy.getFullYear(), trimestre * 3, 1);
+                fechaFin = new Date(hoy.getFullYear(), (trimestre + 1) * 3, 0);
+                const mesInicio = fechaInicio.toLocaleString('es-ES', { month: 'long' });
+                const mesFin = fechaFin.toLocaleString('es-ES', { month: 'long' });
+                rangoTexto = `1 ${mesInicio} - ${fechaFin.getDate()} ${mesFin}, ${anioHoy}`;
+                break;
+            case 'ano':
+                fechaInicio = new Date(hoy.getFullYear(), 0, 1);
+                fechaFin = new Date(hoy.getFullYear(), 11, 31);
+                rangoTexto = `${anioHoy}`;
+                break;
+        }
+        
+        // Actualizar el rango de fechas en el encabezado
+        document.getElementById('rango-fechas').textContent = rangoTexto;
+        
+        // Filtrar transacciones en el rango de fechas
+        const transaccionesFiltradas = transacciones.filter(t => {
+            if (t.estado === 'anulada') return false;
+            const fechaTrans = new Date(t.fecha);
+            return fechaTrans >= fechaInicio && fechaTrans <= fechaFin;
+        });
+        
+        // Calcular totales por cliente - CORREGIDO PARA TOMAR DATOS REALES
+        const totalesPorCliente = {};
+        clientesOrden.forEach(cliente => {
+            totalesPorCliente[cliente] = 0;
+        });
+        
+        transaccionesFiltradas.forEach(trans => {
+            // Extraer nombre del cliente y limpiar
+            let cliente = trans.cliente.replace(' Cliente', '').trim();
+            
+            // Buscar coincidencia exacta o parcial en la lista de clientes
+            const clienteMatch = clientesOrden.find(c => 
+                cliente.includes(c) || c.includes(cliente)
+            );
+            
+            if (clienteMatch) {
+                totalesPorCliente[clienteMatch] += (trans.importe || 0);
+            }
+        });
+        
+        // Mostrar en tabla
+        const cuerpo = document.getElementById('cuerpo-resumen');
+        cuerpo.innerHTML = '';
+        let totalGeneral = 0;
+        
+        clientesOrden.forEach(cliente => {
+            const importe = totalesPorCliente[cliente] || 0;
+            totalGeneral += importe;
+            
+            const fila = document.createElement('tr');
+            fila.innerHTML = `
+                <td class="cliente-fijo">${cliente}</td>
+                <td style="text-align: right;">${importe.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+            `;
+            cuerpo.appendChild(fila);
+        });
+        
+        // Fila de total
+        const filaTotal = document.createElement('tr');
+        filaTotal.innerHTML = `
+            <td><strong>TOTAL</strong></td>
+            <td style="text-align: right;"><strong>RD$ ${totalGeneral.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong></td>
+        `;
+        cuerpo.appendChild(filaTotal);
+        
+        // Actualizar fecha de devengo
+        const opcionesFecha = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+            timeZoneName: 'short'
+        };
+        const fechaDevengo = new Date().toLocaleString('es-ES', opcionesFecha)
+            .replace('GMT-04:00', 'GMT-04:00')
+            .replace(',', '');
+        document.getElementById('fecha-devengo').textContent = fechaDevengo;
+    }
+
+    function imprimirResumen() {
+        alert('🖨️ Imprimiendo resumen de ventas...\n\nEsta función abrirá el diálogo de impresión.');
+    }
+
+    function exportarResumen() {
+        alert('📊 Exportando resumen de ventas...\n\nEsta función generará un archivo Excel/PDF.');
+    }
+
+    // === CREAR/MODIFICAR ESTUDIO CON ENVÍO A PYTHON ===
+    function crearEstudio() {
+        const cliente = document.getElementById('cliente').value.trim();
+        const nombre = document.getElementById('direccion').value.trim();
+        const mensaje = document.getElementById('mensaje');
+        const recibo = estudioEditando !== null ? 
+            transacciones[estudioEditando].recibo : numRecibo;
+        const fechaRecibo = document.getElementById('fecha-recibo').value || new Date().toISOString().split('T')[0];
+        const metodoPago = document.getElementById('metodo-pago').value.trim();
+
+        if (!cliente || !nombre) {
+            mensaje.textContent = "⚠️ Complete los campos obligatorios";
+            mensaje.style.color = "#e74c3c";
+            return;
+        }
+
+        // Obtener descripción y calcular importe total
+        let descripcion = "";
+        let importeTotal = 0;
+        
+        document.querySelectorAll('#cuerpo-tabla tr').forEach((fila, index) => {
+            const servicio = fila.cells[2].querySelector('input').value.trim();
+            const desc = fila.cells[3].querySelector('input').value.trim();
+            const cantidad = parseInt(fila.cells[4].querySelector('input').value) || 1;
+            const importe = parseFloat(fila.cells[6].querySelector('input').value) || 0;
+            
+            if (servicio) {
+                if (index > 0) descripcion += " | ";
+                descripcion += `${servicio}${desc ? ` - ${desc}` : ''}${cantidad > 1 ? ` x${cantidad}` : ''}`;
+            }
+            
+            importeTotal += importe;
+        });
+
+        if (!descripcion) {
+            descripcion = cliente;
+        }
+
+        const datosEstudio = {
+            nombre_paciente: nombre,
+            descripcion: descripcion,
+            recibo: recibo,
+            institucion: "REMadom",
+            cliente: cliente,
+            fecha: fechaRecibo,
+            importe: importeTotal,
+            metodo_pago: metodoPago
+        };
+
+        mensaje.textContent = estudioEditando !== null ? 
+            "⏳ Actualizando estudio en DICOX..." : 
+            "⏳ Enviando estudio a DICOX...";
+        mensaje.style.color = "#17a2b8";
+        
+        // Detectar si estamos en producción o desarrollo
+        const PYTHON_API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:10000' 
+            : 'https://plataforma-dicox-backend.onrender.com';
+
+        fetch(`${PYTHON_API_URL}/api/crear-estudio`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(datosEstudio)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la respuesta del servidor');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Guardar en localStorage con todos los datos
+                const estudios = JSON.parse(localStorage.getItem('estudios_dicox') || '[]');
+                
+                // Si estamos editando, actualizar en lugar de agregar
+                if (estudioEditando !== null) {
+                    estudios[estudioEditando] = {
+                        id: Date.now(),
+                        recibo: recibo,
+                        cliente,
+                        nombre,
+                        fecha: fechaRecibo,
+                        fecha_registro: new Date().toISOString(),
+                        descripcion: datosEstudio.descripcion,
+                        importe: importeTotal,
+                        metodo_pago: metodoPago,
+                        estado: estudios[estudioEditando].estado || 'pagada'
+                    };
+                    localStorage.setItem('estudios_dicox', JSON.stringify(estudios));
+                    
+                    mensaje.textContent = "✅ Estudio actualizado exitosamente";
+                    mensaje.style.color = "#28a745";
+                    
+                    // Volver a gestión después de modificar
+                    setTimeout(() => {
+                        volverAlMenu();
+                        irAGestion();
+                    }, 1000);
+                } else {
+                    estudios.push({
+                        id: Date.now(),
+                        recibo: recibo,
+                        cliente,
+                        nombre,
+                        fecha: fechaRecibo,
+                        fecha_registro: new Date().toISOString(),
+                        descripcion: datosEstudio.descripcion,
+                        importe: importeTotal,
+                        metodo_pago: metodoPago,
+                        estado: 'pagada'
+                    });
+                    localStorage.setItem('estudios_dicox', JSON.stringify(estudios));
+
+                    numRecibo++;
+                    localStorage.setItem('recibo_contador', numRecibo);
+                    document.getElementById('recibo-texto').textContent = `Recibo de Venta #${numRecibo}`;
+                    document.getElementById('numero-recibo').value = numRecibo;
+
+                    document.getElementById('cliente').value = "";
+                    document.getElementById('direccion').value = "";
+                    borrarTodasLineas();
+
+                    mensaje.textContent = "✅ Estudio creado exitosamente en DICOX";
+                    mensaje.style.color = "#28a745";
+                }
+                
+                console.log("✓ Estudio procesado:", datosEstudio);
+            } else {
+                mensaje.textContent = `❌ Error: ${data.message || 'No se pudo procesar el estudio'}`;
+                mensaje.style.color = "#dc3545";
+            }
+        })
+        .catch(error => {
+            console.error('✗ Error al enviar a Python:', error);
+            mensaje.textContent = "⚠️ Error de conexión con DICOX";
+            mensaje.style.color = "#ffc107";
+        });
+    }
+
+    // === GESTIÓN DE TRANSACCIONES ===
+    function cargarTransacciones() {
+        transacciones = JSON.parse(localStorage.getItem('estudios_dicox') || '[]');
+        
+        if (transacciones.length === 0) {
+            document.getElementById('cuerpo-transacciones').innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 40px; color: #6c757d;">
+                        <div style="font-size: 1.5em; margin-bottom: 10px;">📭</div>
+                        <div>No hay transacciones aún</div>
+                        <div style="font-size: 0.9em; margin-top: 5px; color: #95a5a6;">
+                            Crea tu primera transacción desde la sección de Creación
+                        </div>
+                    </td>
+                </tr>
+            `;
+            actualizarResumen();
+            return;
+        }
+        
+        mostrarTransacciones(transacciones);
+        actualizarResumen();
+    }
+
+    function mostrarTransacciones(lista) {
+        const cuerpo = document.getElementById('cuerpo-transacciones');
+        cuerpo.innerHTML = '';
+        
+        lista.forEach((trans, index) => {
+            const fila = document.createElement('tr');
+            fila.style.cursor = 'pointer';
+            fila.onclick = () => toggleDetalles(index);
+            
+            // Formatear fecha correctamente
+            let fechaFormateada = 'N/A';
+            if (trans.fecha) {
+                const partes = trans.fecha.split('-');
+                if (partes.length === 3) {
+                    fechaFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`;
+                }
+            }
+            
+            // Extraer solo el nombre del cliente (sin " Cliente")
+            const clienteNombre = trans.cliente.replace(' Cliente', '');
+            
+            // Calcular importe
+            const importe = trans.importe || 0.00;
+            
+            // Estado
+            const estado = trans.estado || 'pagada';
+            const estadoClass = estado === 'anulada' ? 'estado-anulada' : 'estado-pagada';
+            const estadoTexto = estado === 'anulada' ? 'Anulada' : 'Pagada';
+            
+            fila.innerHTML = `
+                <td>${fechaFormateada}</td>
+                <td>Recibo de Venta</td>
+                <td style="text-align: center; font-weight: 600; color: #007bff;">${trans.recibo}</td>
+                <td>${clienteNombre}</td>
+                <td></td>
+                <td style="text-align: right; font-weight: 700; color: #28a745;">RD$${importe.toFixed(2)}</td>
+                <td style="text-align: center;">
+                    <span class="${estadoClass}">${estadoTexto}</span>
+                </td>
+                <td style="text-align: center;">
+                    <div class="acciones-contenedor">
+                        <a href="#" class="btn-accion-simple" onclick="event.stopPropagation(); editarTransaccion(${index})">Ver/Editar</a>
+                        <div class="dropdown-acciones">
+                            <button class="dropdown-btn" onclick="event.stopPropagation(); toggleDropdown(event, this)">▼</button>
+                            <div class="dropdown-content">
+                                <div class="dropdown-item imprimir" onclick="event.stopPropagation(); imprimirTransaccion(${trans.recibo})">
+                                    Imprimir
+                                </div>
+                                <div class="dropdown-item anular" onclick="event.stopPropagation(); anularTransaccion(${index})">
+                                    Anular
+                                </div>
+                                <div class="dropdown-item eliminar" onclick="event.stopPropagation(); eliminarTransaccion(${index})">
+                                    Eliminar
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            `;
+            
+            cuerpo.appendChild(fila);
+            
+            // Fila de detalles
+            const filaDetalles = document.createElement('tr');
+            filaDetalles.className = 'fila-detalles';
+            filaDetalles.id = `detalles-${index}`;
+            
+            const metodoPago = trans.metodo_pago || 'N/A';
+            
+            filaDetalles.innerHTML = `
+                <td colspan="8">
+                    <div class="detalles-contenido">
+                        <div class="detalle-item">
+                            <span class="detalle-label">Recibo de venta</span>
+                            <span class="detalle-valor">#${trans.recibo}</span>
+                        </div>
+                        <div class="detalle-item">
+                            <span class="detalle-label">Estado</span>
+                            <span class="detalle-valor ${estadoClass}">${estadoTexto}</span>
+                        </div>
+                        <div class="detalle-item">
+                            <span class="detalle-label">Cantidad</span>
+                            <span class="detalle-valor">RD$${importe.toFixed(2)}</span>
+                        </div>
+                        <div class="detalle-item">
+                            <span class="detalle-label">Fecha del recibo</span>
+                            <span class="detalle-valor">${fechaFormateada}</span>
+                        </div>
+                        <div class="detalle-item">
+                            <span class="detalle-label">Cliente</span>
+                            <span class="detalle-valor">${clienteNombre}</span>
+                        </div>
+                        <div class="detalle-item">
+                            <span class="detalle-label">Dirección de facturación</span>
+                            <span class="detalle-valor">${trans.nombre}</span>
+                        </div>
+                        <div class="detalle-item">
+                            <span class="detalle-label">Actividad de Recibo de Venta</span>
+                            <span class="detalle-valor">${metodoPago}</span>
+                        </div>
+                    </div>
+                </td>
+            `;
+            
+            cuerpo.appendChild(filaDetalles);
+        });
+    }
+
+    function toggleDetalles(index) {
+        const detalles = document.getElementById(`detalles-${index}`);
+        if (detalles) {
+            if (detalles.style.display === 'table-row') {
+                detalles.style.display = 'none';
+            } else {
+                // Cerrar todos los demás detalles
+                document.querySelectorAll('.fila-detalles').forEach(fila => {
+                    fila.style.display = 'none';
+                });
+                detalles.style.display = 'table-row';
+            }
+        }
+    }
+
+    function editarTransaccion(index) {
+        const trans = transacciones[index];
+        if (!trans) return;
+        
+        // Ir a la pantalla de creación
+        document.getElementById('gestionScreen').style.display = 'none';
+        document.getElementById('appScreen').style.display = 'block';
+        
+        // Rellenar los campos con los datos del estudio
+        document.getElementById('cliente').value = trans.cliente;
+        document.getElementById('direccion').value = trans.nombre;
+        document.getElementById('fecha-recibo').value = trans.fecha;
+        document.getElementById('numero-recibo').value = trans.recibo;
+        document.getElementById('metodo-pago').value = trans.metodo_pago || '';
+        
+        // Guardar el índice para saber que estamos editando
+        estudioEditando = index;
+        
+        // Actualizar el título
+        document.getElementById('recibo-texto').textContent = `Recibo de Venta #${trans.recibo} (Editando)`;
+        
+        // Cambiar botón a "Modificar Estudio"
+        const btnGuardar = document.getElementById('btn-guardar');
+        btnGuardar.textContent = 'Modificar Estudio';
+        btnGuardar.className = 'btn-modificar';
+        
+        // Limpiar tabla y agregar los servicios
+        borrarTodasLineas();
+    }
+
+    function imprimirTransaccion(recibo) {
+        alert(`🖨️ Imprimiendo Recibo de Venta #${recibo}\n\nEsta función abrirá el diálogo de impresión.`);
+    }
+
+    function anularTransaccion(index) {
+        if (confirm('¿Estás seguro de que deseas anular esta transacción?')) {
+            transacciones[index].estado = 'anulada';
+            localStorage.setItem('estudios_dicox', JSON.stringify(transacciones));
+            cargarTransacciones();
+            alert('✅ Transacción anulada exitosamente');
+        }
+    }
+
+    function eliminarTransaccion(index) {
+        if (confirm('⚠️ ¿Estás seguro de que deseas ELIMINAR permanentemente esta transacción?\n\nEsta acción no se puede deshacer.')) {
+            transacciones.splice(index, 1);
+            localStorage.setItem('estudios_dicox', JSON.stringify(transacciones));
+            cargarTransacciones();
+            alert('✅ Transacción eliminada exitosamente');
+        }
+    }
+
+    function calcularImporteTransaccion(trans) {
+        return trans.importe || 0.00;
+    }
+
+    function actualizarResumen() {
+        const total = transacciones.length;
+        let importeTotal = 0;
+        
+        transacciones.forEach(trans => {
+            if (trans.estado !== 'anulada') {
+                importeTotal += calcularImporteTransaccion(trans);
+            }
+        });
+        
+        document.getElementById('total-transacciones').textContent = total;
+        document.getElementById('importe-total').textContent = `RD$${importeTotal.toFixed(2)}`;
+    }
+
+    function filtrarTransacciones() {
+        const tipo = document.getElementById('filtro-tipo').value;
+        const fecha = document.getElementById('filtro-fecha').value;
+        const cliente = document.getElementById('filtro-cliente').value;
+        const recibo = document.getElementById('filtro-recibo').value;
+        
+        let filtradas = [...transacciones];
+        
+        // Filtro por tipo
+        if (tipo !== 'todos' && tipo !== 'recibos-venta') {
+            filtradas = filtradas.filter(t => tipo === 'recibos-venta');
+        }
+        
+        // Filtro por fecha
+        if (fecha !== 'todo') {
+            const hoy = new Date();
+            filtradas = filtradas.filter(t => {
+                const fechaTrans = new Date(t.fecha);
+                
+                switch(fecha) {
+                    case 'hoy':
+                        const hoyDate = new Date();
+                        hoyDate.setHours(0, 0, 0, 0);
+                        const transDate = new Date(fechaTrans);
+                        transDate.setHours(0, 0, 0, 0);
+                        return transDate.getTime() === hoyDate.getTime();
+                    case 'ayer':
+                        const ayerDate = new Date();
+                        ayerDate.setDate(ayerDate.getDate() - 1);
+                        ayerDate.setHours(0, 0, 0, 0);
+                        const transDateAyer = new Date(fechaTrans);
+                        transDateAyer.setHours(0, 0, 0, 0);
+                        return transDateAyer.getTime() === ayerDate.getTime();
+                    case 'esta-semana':
+                        const primerDiaSemana = new Date();
+                        primerDiaSemana.setDate(primerDiaSemana.getDate() - primerDiaSemana.getDay());
+                        primerDiaSemana.setHours(0, 0, 0, 0);
+                        return fechaTrans >= primerDiaSemana;
+                    case 'este-mes':
+                        return fechaTrans.getMonth() === hoy.getMonth() && 
+                               fechaTrans.getFullYear() === hoy.getFullYear();
+                    default:
+                        return true;
+                }
+            });
+        }
+        
+        // Filtro por cliente
+        if (cliente !== 'todos') {
+            const clienteBusqueda = cliente.toUpperCase().replace(/-/g, ' ');
+            filtradas = filtradas.filter(t => {
+                return t.cliente.toUpperCase().includes(clienteBusqueda);
+            });
+        }
+        
+        // Filtro por número de recibo
+        if (recibo) {
+            filtradas = filtradas.filter(t => t.recibo.toString().includes(recibo));
+        }
+        
+        mostrarTransacciones(filtradas);
+    }
+
+    function toggleDropdown(event, boton) {
+        event.stopPropagation();
+        const dropdown = boton.nextElementSibling;
+        dropdown.classList.toggle('show');
+    }
+
+    // Cerrar dropdowns al hacer click fuera
+    document.addEventListener('click', function(event) {
+        const dropdowns = document.querySelectorAll('.dropdown-content');
+        dropdowns.forEach(dropdown => {
+            if (!dropdown.contains(event.target) && !event.target.classList.contains('dropdown-btn')) {
+                dropdown.classList.remove('show');
+            }
+        });
+    });
+
+    // Cerrar modal al hacer click fuera
+    document.getElementById('modalResumen').addEventListener('click', function(event) {
+        if (event.target === this) {
+            cerrarModalResumen();
+        }
+    });
+
+    // === RESTO DE FUNCIONES ===
+    function cargarRecibo() {
+        numRecibo = parseInt(localStorage.getItem('recibo_contador')) || 1;
+        document.getElementById('recibo-texto').textContent = `Recibo de Venta #${numRecibo}`;
+        document.getElementById('numero-recibo').value = numRecibo;
+    }
+
+    function actualizarDireccion() {
+        const cliente = document.getElementById('cliente').value.trim();
+        const direccionInput = document.getElementById('direccion');
+        if (cliente.endsWith(" Cliente")) {
+            const direccion = cliente.slice(0, -8);
+            if (!direccionInput.value || direccionInput.value === direccion) {
+                direccionInput.value = direccion;
+            }
+        }
+    }
+
+    function verEstudiosRecientes() {
+        const estudios = JSON.parse(localStorage.getItem('estudios_dicox') || '[]');
+        if (estudios.length === 0) {
+            alert("No hay estudios recientes");
+            return;
+        }
+        let texto = "ESTUDIOS RECIENTES:\n\n";
+        estudios.slice(-5).reverse().forEach(e => {
+            texto += `Recibo #${e.recibo} | ${e.cliente}\n${e.nombre}\n(${e.fecha})\n\n`;
+        });
+        alert(texto);
+    }
+
+    function inicializarFechaHoy() {
+        const hoy = new Date();
+        const yyyy = hoy.getFullYear();
+        const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dd = String(hoy.getDate()).padStart(2, '0');
+        document.getElementById('fecha-recibo').value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    function toggleTabla() {
+        const contenedor = document.getElementById('contenedor-tabla');
+        const panel = document.getElementById('panel-resumen');
+        const boton = document.getElementById('toggle-tabla');
+        
+        if (contenedor.style.display === 'none' || contenedor.style.display === '') {
+            contenedor.style.display = 'block';
+            panel.style.display = 'block';
+            boton.textContent = '➖';
+        } else {
+            contenedor.style.display = 'none';
+            panel.style.display = 'none';
+            boton.textContent = '➕';
+        }
+    }
+
+    function agregarLinea() {
+        const cuerpo = document.getElementById('cuerpo-tabla');
+        contadorFilas++;
+        
+        const hoy = new Date();
+        const yyyy = hoy.getFullYear();
+        const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dd = String(hoy.getDate()).padStart(2, '0');
+        const fechaHoy = `${yyyy}-${mm}-${dd}`;
+        
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+            <td>${contadorFilas}</td>
+            <td><input type="date" value="${fechaHoy}" onchange="actualizarImporteTotal()"></td>
+            <td><input list="servicios-predefinidos" onchange="actualizarImporteTotal()"></td>
+            <td><input type="text" onchange="actualizarImporteTotal()"></td>
+            <td><input type="number" min="1" value="1" onchange="actualizarImporteTotal()" style="width: 60px;"></td>
+            <td><input type="number" step="0.01" min="0" value="0" onchange="actualizarImporteTotal()" style="width: 80px;"></td>
+            <td><input type="number" step="0.01" min="0" value="0" onchange="actualizarImporteTotal()" style="width: 80px; font-weight: bold; color: #000;"></td>
+            <td><button type="button" onclick="eliminarFila(this)" style="padding: 2px 6px; font-size: 0.75em;">🗑️</button></td>
+        `;
+        cuerpo.appendChild(fila);
+    }
+
+    function eliminarFila(boton) {
+        const fila = boton.closest('tr');
+        fila.remove();
+        renumerarFilas();
+        actualizarImporteTotal();
+    }
+
+    function renumerarFilas() {
+        contadorFilas = 0;
+        document.querySelectorAll('#cuerpo-tabla tr').forEach(fila => {
+            contadorFilas++;
+            fila.cells[0].textContent = contadorFilas;
+        });
+    }
+
+    function actualizarImporteTotal() {
+        let total = 0;
+        document.querySelectorAll('#cuerpo-tabla tr').forEach(fila => {
+            const importeInput = fila.cells[6].querySelector('input');
+            const importe = parseFloat(importeInput.value) || 0;
+            total += importe;
+        });
+
+        document.getElementById('subtotal-texto').textContent = `RD$${total.toFixed(2)}`;
+        document.getElementById('total-texto').textContent = `RD$${total.toFixed(2)}`;
+        document.getElementById('importe-texto').textContent = `RD$${total.toFixed(2)}`;
+
+        document.getElementById('importe-recibido').value = total.toFixed(2);
+        document.getElementById('saldo-texto').textContent = "RD$0.00";
+    }
+
+    function borrarTodasLineas() {
+        document.getElementById('cuerpo-tabla').innerHTML = '';
+        contadorFilas = 0;
+        actualizarImporteTotal();
+    }
+
+    // Inicialización
+    if (localStorage.getItem('dicox_sesion') === 'activa') {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainMenu').style.display = 'block';
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            typeWriter('DICOX', 0, null);
+        }, 300);
+        
+        const buttons = document.querySelectorAll('.login-container button');
+        buttons.forEach(button => {
+            button.addEventListener('click', createRipple);
+        });
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+<script>
+    particlesJS("particles-js", {
+        particles: {
+            number: { value: 80, density: { enable: true, value_area: 800 } },
+            color: { value: "#ffffff" },
+            shape: { type: "circle" },
+            opacity: { value: 0.2, random: true },
+            size: { value: 3, random: true },
+            line_linked: {
+                enable: true,
+                distance: 150,
+                color: "#ffffff",
+                opacity: 0.1,
+                width: 1
+            },
+            move: {
+                enable: true,
+                speed: 1,
+                direction: "none",
+                random: true,
+                straight: false,
+                out_mode: "out",
+                bounce: false
+            }
+        },
+        interactivity: {
+            detect_on: "canvas",
+            events: {
+                onhover: { enable: true, mode: "repulse" },
+                onclick: { enable: true, mode: "push" },
+                resize: true
+            }
+        },
+        retina_detect: true
+    });
+</script>
+
+</body>
+</html>
