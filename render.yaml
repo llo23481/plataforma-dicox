@@ -16,7 +16,11 @@ services:
     region: oregon
     plan: free
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "python servidor_dicox.py"
+    startCommand: "gunicorn -w 4 -b 0.0.0.0:$PORT servidor_dicox:app"
     envVars:
       - key: PORT
         value: 10000
+    disk:
+      name: estudios_data
+      mountPath: /opt/render/project/src
+      sizeGB: 1
