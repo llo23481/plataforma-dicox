@@ -1823,14 +1823,69 @@
     }
 
     function irACreacion() {
+        // Obtener próximo recibo desde backend ANTES de mostrar la pantalla
+        fetch('https://plataforma-dicox-backend-act3.onrender.com/api/proximo-recibo')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al obtener recibo');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success && data.proximo_recibo) {
+                    // Guardar en localStorage como respaldo
+                    numRecibo = data.proximo_recibo;
+                    localStorage.setItem('recibo_contador', numRecibo);
+                
+                    // Mostrar pantalla de creación
+                    document.getElementById('mainMenu').style.display = 'none';
+                    document.getElementById('appScreen').style.display = 'block';
+                    actualizarUIRecibo();
+                    inicializarFechaHoy();
+                    estudioEditando = null;
+                    document.getElementById('btn-guardar').textContent = 'Crear Estudio';
+                    document.getElementById('btn-guardar').className = '';
+                    document.getElementById('btn-guardar').classList.add('form-container', 'button');
+                } else {
+                    // Fallback si la API no devuelve el recibo correctamente
+                    fallbackReciboLocal();
+                }
+            })
+            .catch(error => {
+                console.error('Error al obtener recibo desde backend:', error);
+                // Fallback si falla la conexión
+                fallbackReciboLocal();
+            });
+    }
+    
+    function actualizarUIRecibo() {
+        // Actualizar el texto del recibo en la UI
+        document.getElementById('recibo-texto').textContent = `Recibo de Venta #${numRecibo}`;
+    
+        // Actualizar el campo de input si existe
+        const inputRecibo = document.getElementById('numero-recibo');
+        if (inputRecibo) {
+            inputRecibo.value = numRecibo;
+        }
+    }
+    
+    function fallbackReciboLocal() {
+        // Usar contador local como respaldo
+        numRecibo = parseInt(localStorage.getItem('recibo_contador')) || 1;
+        localStorage.setItem('recibo_contador', numRecibo);
+    
+        // Mostrar pantalla de creación
         document.getElementById('mainMenu').style.display = 'none';
         document.getElementById('appScreen').style.display = 'block';
-        cargarRecibo();
+        actualizarUIRecibo();
         inicializarFechaHoy();
         estudioEditando = null;
         document.getElementById('btn-guardar').textContent = 'Crear Estudio';
         document.getElementById('btn-guardar').className = '';
         document.getElementById('btn-guardar').classList.add('form-container', 'button');
+    
+        // Mostrar advertencia
+        alert('⚠️ Usando contador local (sin conexión al servidor)');
     }
 
     function volverAlMenu() {
@@ -2050,10 +2105,8 @@
             "⏳ Enviando estudio a DICOX...";
         mensaje.style.color = "#17a2b8";
         
-        // Detectar si estamos en producción o desarrollo
-        const PYTHON_API_URL = window.location.hostname === 'localhost' 
-            ? 'http://localhost:10000' 
-            : 'https://plataforma-dicox-backend-act3.onrender.com';
+        // URL del backend en Render (ACTUALIZADA)
+        const PYTHON_API_URL = 'https://plataforma-dicox-backend-act3.onrender.com';
 
         fetch(`${PYTHON_API_URL}/api/crear-estudio`, {
             method: 'POST',
@@ -2069,68 +2122,69 @@
             return response.json();
         })
         .then(data => {
-            if (data.success) {
-                // Guardar en localStorage con todos los datos
-                const estudios = JSON.parse(localStorage.getItem('estudios_dicox') || '[]');
-                
-                // Si estamos editando, actualizar en lugar de agregar
-                if (estudioEditando !== null) {
-                    estudios[estudioEditando] = {
-                        id: Date.now(),
-                        recibo: recibo,
-                        cliente,
-                        nombre,
-                        fecha: fechaRecibo,
-                        fecha_registro: new Date().toISOString(),
-                        descripcion: datosEstudio.descripcion,
-                        importe: importeTotal,
-                        metodo_pago: metodoPago,
-                        estado: estudios[estudioEditando].estado || 'pagada'
-                    };
-                    localStorage.setItem('estudios_dicox', JSON.stringify(estudios));
-                    
-                    mensaje.textContent = "✅ Estudio actualizado exitosamente";
-                    mensaje.style.color = "#28a745";
-                    
-                    // Volver a gestión después de modificar
-                    setTimeout(() => {
-                        volverAlMenu();
-                        irAGestion();
-                    }, 1000);
-                } else {
-                    estudios.push({
-                        id: Date.now(),
-                        recibo: recibo,
-                        cliente,
-                        nombre,
-                        fecha: fechaRecibo,
-                        fecha_registro: new Date().toISOString(),
-                        descripcion: datosEstudio.descripcion,
-                        importe: importeTotal,
-                        metodo_pago: metodoPago,
-                        estado: 'pagada'
-                    });
-                    localStorage.setItem('estudios_dicox', JSON.stringify(estudios));
-
-                    numRecibo++;
-                    localStorage.setItem('recibo_contador', numRecibo);
-                    document.getElementById('recibo-texto').textContent = `Recibo de Venta #${numRecibo}`;
-                    document.getElementById('numero-recibo').value = numRecibo;
-
-                    document.getElementById('cliente').value = "";
-                    document.getElementById('direccion').value = "";
-                    borrarTodasLineas();
-
-                    mensaje.textContent = "✅ Estudio creado exitosamente en DICOX";
-                    mensaje.style.color = "#28a745";
-                }
-                
-                console.log("✓ Estudio procesado:", datosEstudio);
-            } else {
-                mensaje.textContent = `❌ Error: ${data.message || 'No se pudo procesar el estudio'}`;
-                mensaje.style.color = "#dc3545";
-            }
-        })
+    if (data.success) {
+        const estudios = JSON.parse(localStorage.getItem('estudios_dicox') || '[]');
+        
+        if (estudioEditando !== null) {
+            // Modificar estudio existente
+            estudios[estudioEditando] = {
+                id: Date.now(),
+                recibo: recibo,
+                cliente,
+                nombre,
+                fecha: fechaRecibo,
+                fecha_registro: new Date().toISOString(),
+                descripcion: datosEstudio.descripcion,
+                importe: importeTotal,
+                metodo_pago: metodoPago,
+                estado: estudios[estudioEditando].estado || 'pagada'
+            };
+            localStorage.setItem('estudios_dicox', JSON.stringify(estudios));
+            mensaje.textContent = "✅ Estudio actualizado exitosamente";
+            mensaje.style.color = "#28a745";
+            setTimeout(() => {
+                volverAlMenu();
+                irAGestion();
+            }, 1000);
+        } else {
+            // Crear nuevo estudio - USAR EL RECIBO DEVUELTO POR EL BACKEND
+            const nuevoRecibo = data.estudio.recibo;  // ← CORRECTO: usar el recibo del backend
+            
+            estudios.push({
+                id: Date.now(),
+                recibo: nuevoRecibo,
+                cliente,
+                nombre,
+                fecha: fechaRecibo,
+                fecha_registro: new Date().toISOString(),
+                descripcion: datosEstudio.descripcion,
+                importe: importeTotal,
+                metodo_pago: metodoPago,
+                estado: 'pagada'
+            });
+            localStorage.setItem('estudios_dicox', JSON.stringify(estudios));
+            
+            // Actualizar contador local al PRÓXIMO recibo (no incrementar manualmente)
+            numRecibo = parseInt(nuevoRecibo) + 1;
+            localStorage.setItem('recibo_contador', numRecibo);
+            
+            // Limpiar formulario
+            document.getElementById('cliente').value = "";
+            document.getElementById('direccion').value = "";
+            borrarTodasLineas();
+            
+            // Actualizar UI con el PRÓXIMO recibo
+            actualizarUIRecibo();
+            
+            mensaje.textContent = `✅ Estudio #${nuevoRecibo} creado exitosamente`;
+            mensaje.style.color = "#28a745";
+        }
+        console.log("✓ Estudio procesado:", datosEstudio);
+    } else {
+        mensaje.textContent = `❌ Error: ${data.message || 'No se pudo procesar el estudio'}`;
+        mensaje.style.color = "#dc3545";
+    }
+})
         .catch(error => {
             console.error('✗ Error al enviar a Python:', error);
             mensaje.textContent = "⚠️ Error de conexión con DICOX";
@@ -2613,6 +2667,4 @@
 </script>
 
 </body>
-
 </html>
-
