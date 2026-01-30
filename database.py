@@ -1,26 +1,17 @@
-import psycopg2
+import sqlite3
 import os
-from psycopg2.extras import RealDictCursor
 from datetime import datetime
 
-def get_db_connection():
-    DATABASE_URL = os.environ.get('DATABASE_URL')
-    if not DATABASE_URL:
-        raise Exception("DATABASE_URL no está configurada")
-    
-    if "render.com" in DATABASE_URL and "?sslmode=" not in DATABASE_URL:
-        DATABASE_URL += "?sslmode=require"
-    
-    return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+DB_FILE = 'estudios.db'
 
 def init_db():
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB_FILE)
     cur = conn.cursor()
     
     # Tabla de estudios
     cur.execute("""
         CREATE TABLE IF NOT EXISTS estudios (
-            id SERIAL PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             nombre_paciente TEXT NOT NULL,
             descripcion TEXT NOT NULL,
             recibo TEXT UNIQUE NOT NULL,
@@ -29,64 +20,52 @@ def init_db():
             fecha TEXT,
             importe TEXT DEFAULT '0',
             metodo_pago TEXT,
-            procesado BOOLEAN DEFAULT FALSE,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            procesado INTEGER DEFAULT 0,
+            timestamp TEXT DEFAULT CURRENT_TIMESTAMP
         )
     """)
     
-    # Tabla de configuración (contador global de recibo)
+    # Tabla de configuración (contador global)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS configuracion (
-            id SERIAL PRIMARY KEY,
-            clave TEXT UNIQUE NOT NULL,
+            clave TEXT PRIMARY KEY,
             valor TEXT NOT NULL
         )
     """)
     
-    # Inicializar contador si no existe
+    # Inicializar contador
     cur.execute("""
-        INSERT INTO configuracion (clave, valor)
-        VALUES ('proximo_recibo', '1')
-        ON CONFLICT (clave) DO NOTHING
+        INSERT OR IGNORE INTO configuracion (clave, valor) VALUES ('proximo_recibo', '1')
     """)
     
     conn.commit()
-    cur.close()
     conn.close()
-    print("✅ Base de datos inicializada correctamente")
+    print("✅ Base de datos SQLite inicializada")
+
+init_db()
 
 def obtener_proximo_recibo():
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB_FILE)
     cur = conn.cursor()
-    
-    # Bloqueo para evitar race conditions
-    cur.execute("BEGIN")
-    cur.execute("SELECT valor FROM configuracion WHERE clave = 'proximo_recibo' FOR UPDATE")
+    cur.execute("SELECT valor FROM configuracion WHERE clave = 'proximo_recibo'")
     row = cur.fetchone()
-    proximo = int(row['valor'])
-    
-    # Actualizar contador
-    cur.execute("UPDATE configuracion SET valor = %s WHERE clave = 'proximo_recibo'", (str(proximo + 1),))
+    proximo = int(row[0])
+    cur.execute("UPDATE configuracion SET valor = ? WHERE clave = 'proximo_recibo'", (str(proximo + 1),))
     conn.commit()
-    
-    cur.close()
     conn.close()
     return proximo
 
 def crear_estudio(data):
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB_FILE)
     cur = conn.cursor()
     
-    # Obtener próximo recibo
     recibo_numero = obtener_proximo_recibo()
     
     cur.execute("""
         INSERT INTO estudios (
             nombre_paciente, descripcion, recibo, institucion, 
             cliente, fecha, importe, metodo_pago, procesado
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-        RETURNING id, nombre_paciente, descripcion, recibo, institucion, 
-                  cliente, fecha, importe, metodo_pago, procesado
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         data['nombre_paciente'],
         data['descripcion'],
@@ -96,58 +75,72 @@ def crear_estudio(data):
         data.get('fecha', datetime.now().strftime('%Y-%m-%d')),
         str(data.get('importe', 0)),
         data.get('metodo_pago', ''),
-        False
+        0
     ))
     
-    estudio = cur.fetchone()
+    estudio_id = cur.lastrowid
     conn.commit()
-    cur.close()
     conn.close()
     
-    return dict(estudio)
+    return {
+        'id': estudio_id,
+        'nombre_paciente': data['nombre_paciente'],
+        'descripcion': data['descripcion'],
+        'recibo': str(recibo_numero),
+        'institucion': data.get('institucion', 'REMadom'),
+        'cliente': data.get('cliente', ''),
+        'fecha': data.get('fecha', datetime.now().strftime('%Y-%m-%d')),
+        'importe': str(data.get('importe', 0)),
+        'metodo_pago': data.get('metodo_pago', ''),
+        'procesado': False
+    }
 
 def obtener_estudios_pendientes():
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB_FILE)
     cur = conn.cursor()
-    
-    cur.execute("SELECT * FROM estudios WHERE procesado = FALSE ORDER BY id DESC")
-    estudios = cur.fetchall()
-    
-    cur.close()
+    cur.execute("SELECT * FROM estudios WHERE procesado = 0 ORDER BY id DESC")
+    rows = cur.fetchall()
     conn.close()
-    return [dict(e) for e in estudios]
+    
+    estudios = []
+    for row in rows:
+        estudios.append({
+            'id': row[0],
+            'nombre_paciente': row[1],
+            'descripcion': row[2],
+            'recibo': row[3],
+            'institucion': row[4],
+            'cliente': row[5],
+            'fecha': row[6],
+            'importe': row[7],
+            'metodo_pago': row[8],
+            'procesado': row[9] == 1
+        })
+    
+    return estudios
 
 def marcar_procesado(estudio_id):
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB_FILE)
     cur = conn.cursor()
-    
-    cur.execute("UPDATE estudios SET procesado = TRUE WHERE id = %s", (estudio_id,))
+    cur.execute("UPDATE estudios SET procesado = 1 WHERE id = ?", (estudio_id,))
     conn.commit()
-    
-    cur.close()
     conn.close()
-    return cur.rowcount > 0
+    return True
 
 def health_check():
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB_FILE)
     cur = conn.cursor()
-    
-    cur.execute("SELECT COUNT(*) as total FROM estudios")
-    total = cur.fetchone()['total']
-    
-    cur.execute("SELECT COUNT(*) as pendientes FROM estudios WHERE procesado = FALSE")
-    pendientes = cur.fetchone()['pendientes']
-    
-    cur.close()
+    cur.execute("SELECT COUNT(*) FROM estudios")
+    total = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM estudios WHERE procesado = 0")
+    pendientes = cur.fetchone()[0]
     conn.close()
     
     return {
         'status': 'ok',
         'estudios_totales': total,
         'pendientes': pendientes,
-        'message': 'Servidor DICOX activo'
+        'message': 'Servidor DICOX activo (SQLite)'
     }
 
-# Inicializar DB al importar
-init_db()
 
