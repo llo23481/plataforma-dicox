@@ -1824,7 +1824,7 @@
 
     function irACreacion() {
         // Obtener próximo recibo desde backend ANTES de mostrar la pantalla
-        fetch('https://plataforma-dicox-backend-act3.onrender.com/api/proximo-recibo')
+        fetch('https://plataforma-dicox-backend-v2.onrender.com/api/proximo-recibo')
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Error al obtener recibo');
@@ -2106,7 +2106,7 @@
         mensaje.style.color = "#17a2b8";
         
         // URL del backend en Render (ACTUALIZADA)
-        const PYTHON_API_URL = 'https://plataforma-dicox-backend-act3.onrender.com';
+        const PYTHON_API_URL = 'https://plataforma-dicox-backend-v2.onrender.com';
 
         fetch(`${PYTHON_API_URL}/api/crear-estudio`, {
             method: 'POST',
