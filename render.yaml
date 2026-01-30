@@ -20,7 +20,6 @@ services:
     envVars:
       - key: PORT
         value: 10000
-    disk:
-      name: estudios_data
-      mountPath: /opt/render/project/src
-      sizeGB: 1
+      - key: DATABASE_URL
+        sync: false  # Render lo sincronizará automáticamente con tu BD
+
