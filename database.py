@@ -8,7 +8,6 @@ def get_db_connection():
     if not DATABASE_URL:
         raise Exception("DATABASE_URL no está configurada")
     
-    # Render requiere sslmode=require
     if "render.com" in DATABASE_URL and "?sslmode=" not in DATABASE_URL:
         DATABASE_URL += "?sslmode=require"
     
@@ -151,3 +150,4 @@ def health_check():
 
 # Inicializar DB al importar
 init_db()
+
