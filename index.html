@@ -1997,7 +1997,7 @@
             );
             
             if (clienteMatch) {
-                totalesPorCliente[clienteMatch] += (trans.importe || 0);
+                totalesPorCliente[clienteMatch] += (parseFloat(trans.importe) || 0);
             }
         });
         
@@ -2244,7 +2244,7 @@
             const clienteNombre = trans.cliente.replace(' Cliente', '');
             
             // Calcular importe
-            const importe = trans.importe || 0.00;
+            const importe = parseFloat(trans.importe) || 0.00;
             
             // Estado
             const estado = trans.estado || 'pagada';
@@ -2398,7 +2398,7 @@
     }
 
     function calcularImporteTransaccion(trans) {
-        return trans.importe || 0.00;
+        return parseFloat(trans.importe) || 0.00;
     }
 
     function actualizarResumen() {
@@ -2674,3 +2674,4 @@
 
 </body>
 </html>
+
