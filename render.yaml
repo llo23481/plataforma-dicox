@@ -1,27 +1,18 @@
 services:
   - type: web
-    name: plataforma-dicox-frontend
-    env: static
-    region: oregon
-    plan: free
-    buildCommand: echo "No build required"
-    staticPublishPath: ./
-    envVars:
-      - key: PYTHON_API_URL
-        sync: false
-
-  - type: web
     name: plataforma-dicox-backend
     env: python
     region: oregon
     plan: free
-    runtime: python-3.12.7  # ← FORZAR Python 3.12
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn -w 4 -b 0.0.0.0:$PORT servidor_dicox:app"
+    startCommand: "gunicorn -w 1 -b 0.0.0.0:$PORT servidor_dicox:app"  # ← SOLO 1 WORKER
     envVars:
       - key: PORT
         value: 10000
-      - key: DATABASE_URL
-        sync: false
+    disk:
+      name: sqlite_data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1
+
 
 
