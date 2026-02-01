@@ -2194,26 +2194,32 @@
 
     // === GESTIÓN DE TRANSACCIONES ===
     function cargarTransacciones() {
-        transacciones = JSON.parse(localStorage.getItem('estudios_dicox') || '[]');
-        
-        if (transacciones.length === 0) {
-            document.getElementById('cuerpo-transacciones').innerHTML = `
-                <tr>
-                    <td colspan="8" style="text-align: center; padding: 40px; color: #6c757d;">
-                        <div style="font-size: 1.5em; margin-bottom: 10px;">📭</div>
-                        <div>No hay transacciones aún</div>
-                        <div style="font-size: 0.9em; margin-top: 5px; color: #95a5a6;">
-                            Crea tu primera transacción desde la sección de Creación
-                        </div>
-                    </td>
-                </tr>
-            `;
-            actualizarResumen();
-            return;
-        }
-        
-        mostrarTransacciones(transacciones);
-        actualizarResumen();
+        // Cargar DIRECTAMENTE desde el backend global (NO desde localStorage)
+        fetch('https://plataforma-dicox-backend-v2.onrender.com/api/estudios-pendientes')
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.success && data.estudios) {
+                    // Guardar en localStorage como caché (opcional, para offline)
+                    localStorage.setItem('estudios_dicox', JSON.stringify(data.estudios));
+                    transacciones = data.estudios;
+                    mostrarTransacciones(transacciones);
+                    actualizarResumen();
+                    console.log("✅ Transacciones cargadas desde backend global");
+                } else {
+                    throw new Error('Respuesta inválida del backend');
+                }
+            })
+            .catch(error => {
+                console.error("❌ Error al cargar transacciones:", error);
+                // Fallback: usar localStorage si el backend falla
+                transacciones = JSON.parse(localStorage.getItem('estudios_dicox') || '[]');
+                mostrarTransacciones(transacciones);
+                actualizarResumen();
+                alert("⚠️ Usando datos en caché. Verifica tu conexión a internet.");
+            });
     }
 
     function mostrarTransacciones(lista) {
