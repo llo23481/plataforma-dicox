@@ -180,7 +180,7 @@ def obtener_estudios_pendientes():
     try:
         print(f"📋 Obteniendo estudios pendientes...")
         result = execute_with_retry(
-            "SELECT * FROM estudios WHERE procesado = 0 ORDER BY id DESC"
+            "SELECT * FROM estudios ORDER BY id DESC"
         )
         
         estudios = []
@@ -251,6 +251,7 @@ def health_check():
             'status': 'error',
             'message': str(e)
         }
+
 
 
 
