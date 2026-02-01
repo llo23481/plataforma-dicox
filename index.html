@@ -2316,7 +2316,7 @@
                         </div>
                         <div class="detalle-item">
                             <span class="detalle-label">Dirección de facturación</span>
-                            <span class="detalle-valor">${trans.nombre}</span>
+                            <span class="detalle-valor">${trans.nombre_paciente || trans.nombre || 'N/A'}</span>  <!-- ✅ CORRECTO -->
                         </div>
                         <div class="detalle-item">
                             <span class="detalle-label">Actividad de Recibo de Venta</span>
@@ -2674,4 +2674,5 @@
 
 </body>
 </html>
+
 
