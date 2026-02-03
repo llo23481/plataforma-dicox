@@ -1823,19 +1823,29 @@
     }
 
     function irACreacion() {
-        // Obtener próximo recibo desde backend ANTES de mostrar la pantalla
-        fetch('https://plataforma-dicox-backend-v2.onrender.com/api/proximo-recibo')
+        // URL CORRECTA (sin espacios al final)
+        const apiUrl = 'https://plataforma-dicox-backend-v2.onrender.com/api/proximo-recibo';
+    
+        console.log('📡 Conectando al backend:', apiUrl);
+    
+        fetch(apiUrl)
             .then(response => {
+                console.log('📡 Respuesta del backend:', response.status);
+            
                 if (!response.ok) {
-                    throw new Error('Error al obtener recibo');
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 return response.json();
             })
             .then(data => {
+                console.log('✅ Datos recibidos:', data);
+            
                 if (data.success && data.proximo_recibo) {
                     // Guardar en localStorage como respaldo
                     numRecibo = data.proximo_recibo;
                     localStorage.setItem('recibo_contador', numRecibo);
+                
+                    console.log('✅ Próximo recibo:', numRecibo);
                 
                     // Mostrar pantalla de creación
                     document.getElementById('mainMenu').style.display = 'none';
@@ -1847,21 +1857,44 @@
                     document.getElementById('btn-guardar').className = '';
                     document.getElementById('btn-guardar').classList.add('form-container', 'button');
                 } else {
-                    // Fallback si la API no devuelve el recibo correctamente
-                    fallbackReciboLocal();
+                    console.warn('⚠️ Respuesta inválida del backend:', data);
+                    usarContadorLocal();
                 }
             })
             .catch(error => {
-                console.error('Error al obtener recibo desde backend:', error);
-                // Fallback si falla la conexión
-                fallbackReciboLocal();
+                console.error('❌ Error al obtener recibo desde backend:', error);
+            
+                // Mostrar mensaje al usuario
+                alert('⚠️ Usando contador local (sin conexión al servidor)');
+            
+                // Usar contador local como fallback
+                usarContadorLocal();
             });
+    }
+
+    function usarContadorLocal() {
+        // Usar contador local como respaldo
+        numRecibo = parseInt(localStorage.getItem('recibo_contador')) || 1;
+        localStorage.setItem('recibo_contador', numRecibo);
+    
+        // Mostrar pantalla de creación
+        document.getElementById('mainMenu').style.display = 'none';
+        document.getElementById('appScreen').style.display = 'block';
+        actualizarUIRecibo();
+        inicializarFechaHoy();
+        estudioEditando = null;
+        document.getElementById('btn-guardar').textContent = 'Crear Estudio';
+        document.getElementById('btn-guardar').className = '';
+        document.getElementById('btn-guardar').classList.add('form-container', 'button');
     }
     
     function actualizarUIRecibo() {
         // Actualizar el texto del recibo en la UI
-        document.getElementById('recibo-texto').textContent = `Recibo de Venta #${numRecibo}`;
-    
+        const reciboElement = document.getElementById('recibo-texto');
+        if (reciboElement) {
+            reciboElement.textContent = `Recibo de Venta #${numRecibo}`;
+        }
+        
         // Actualizar el campo de input si existe
         const inputRecibo = document.getElementById('numero-recibo');
         if (inputRecibo) {
@@ -1997,7 +2030,7 @@
             );
             
             if (clienteMatch) {
-                totalesPorCliente[clienteMatch] += (parseFloat(trans.importe) || 0);
+                totalesPorCliente[clienteMatch] += (trans.importe || 0);
             }
         });
         
@@ -2244,7 +2277,7 @@
             const clienteNombre = trans.cliente.replace(' Cliente', '');
             
             // Calcular importe
-            const importe = parseFloat(trans.importe) || 0.00;
+            const importe = trans.importe || 0.00;
             
             // Estado
             const estado = trans.estado || 'pagada';
@@ -2316,7 +2349,7 @@
                         </div>
                         <div class="detalle-item">
                             <span class="detalle-label">Dirección de facturación</span>
-                            <span class="detalle-valor">${trans.nombre_paciente || trans.nombre || 'N/A'}</span>  <!-- ✅ CORRECTO -->
+                            <span class="detalle-valor">${trans.nombre}</span>
                         </div>
                         <div class="detalle-item">
                             <span class="detalle-label">Actividad de Recibo de Venta</span>
@@ -2398,7 +2431,7 @@
     }
 
     function calcularImporteTransaccion(trans) {
-        return parseFloat(trans.importe) || 0.00;
+        return trans.importe || 0.00;
     }
 
     function actualizarResumen() {
@@ -2674,5 +2707,7 @@
 
 </body>
 </html>
+
+
 
 
