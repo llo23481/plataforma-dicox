@@ -2227,27 +2227,25 @@
 
     // === GESTIÓN DE TRANSACCIONES ===
     function cargarTransacciones() {
-        // Cargar DIRECTAMENTE desde el backend global (NO desde localStorage)
+        // URL CORREGIDA (sin espacios al final)
         fetch('https://plataforma-dicox-backend-v2.onrender.com/api/estudios-pendientes')
             .then(response => {
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 return response.json();
             })
             .then(data => {
-                if (data.success && data.estudios) {
-                    // Guardar en localStorage como caché (opcional, para offline)
-                    localStorage.setItem('estudios_dicox', JSON.stringify(data.estudios));
-                    transacciones = data.estudios;
-                    mostrarTransacciones(transacciones);
-                    actualizarResumen();
-                    console.log("✅ Transacciones cargadas desde backend global");
-                } else {
-                    throw new Error('Respuesta inválida del backend');
-                }
+               if (data.success && data.estudios) {
+                   localStorage.setItem('estudios_dicox', JSON.stringify(data.estudios));
+                   transacciones = data.estudios;
+                   mostrarTransacciones(transacciones);
+                   actualizarResumen();
+                   console.log("✅ Transacciones cargadas desde backend global");
+               } else {
+                   throw new Error('Respuesta inválida del backend');
+               }
             })
             .catch(error => {
                 console.error("❌ Error al cargar transacciones:", error);
-                // Fallback: usar localStorage si el backend falla
                 transacciones = JSON.parse(localStorage.getItem('estudios_dicox') || '[]');
                 mostrarTransacciones(transacciones);
                 actualizarResumen();
@@ -2277,7 +2275,7 @@
             const clienteNombre = trans.cliente.replace(' Cliente', '');
             
             // Calcular importe
-            const importe = trans.importe || 0.00;
+            const importe = parseFloat(trans.importe) || 0.00;
             
             // Estado
             const estado = trans.estado || 'pagada';
@@ -2349,7 +2347,7 @@
                         </div>
                         <div class="detalle-item">
                             <span class="detalle-label">Dirección de facturación</span>
-                            <span class="detalle-valor">${trans.nombre}</span>
+                            <span class="detalle-valor">${trans.nombre_paciente || trans.nombre || 'N/A'}</span>
                         </div>
                         <div class="detalle-item">
                             <span class="detalle-label">Actividad de Recibo de Venta</span>
@@ -2707,7 +2705,3 @@
 
 </body>
 </html>
-
-
-
-
