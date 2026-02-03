@@ -2,9 +2,12 @@ import psycopg2
 import os
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
+import traceback
 
-# Railway inyecta DATABASE_URL automáticamente
-DATABASE_URL = os.environ.get('DATABASE_URL')
+# Render inyecta DATABASE_URL automáticamente si la BD está en el mismo proyecto
+DATABASE_URL = os.environ.get('DATABASE_URL', '')
+if DATABASE_URL and "?sslmode=" not in DATABASE_URL:
+    DATABASE_URL += "?sslmode=require"
 
 def get_db():
     return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
@@ -12,6 +15,8 @@ def get_db():
 def init_db():
     conn = get_db()
     cur = conn.cursor()
+    
+    print("🔄 Inicializando PostgreSQL...")
     
     # Tablas
     cur.execute("""
@@ -46,7 +51,7 @@ def init_db():
     
     conn.commit()
     conn.close()
-    print("✅ PostgreSQL inicializado")
+    print("✅ PostgreSQL inicializado correctamente")
 
 init_db()
 
@@ -234,6 +239,7 @@ def health_check():
             'status': 'error',
             'message': str(e)
         }
+
 
 
 
