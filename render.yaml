@@ -2,17 +2,16 @@ services:
   - type: web
     name: plataforma-dicox-backend
     env: python
-    region: oregon
-    plan: free
+    region: oregon  # ← DEBE SER LA MISMA REGIÓN QUE TU POSTGRESQL
+    plan: starter   # ← CAMBIA A "starter" PARA 24/7 (ver Paso 4)
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn -w 1 -b 0.0.0.0:$PORT servidor_dicox:app"  # ← SOLO 1 WORKER
+    startCommand: "gunicorn -w 1 -b 0.0.0.0:$PORT servidor_dicox:app"
     envVars:
       - key: PORT
         value: 10000
-    disk:
-      name: sqlite_data
-      mountPath: /opt/render/project/src/data
-      sizeGB: 1
+      - key: DATABASE_URL
+        sync: false
+
 
 
 
