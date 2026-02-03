@@ -2435,15 +2435,36 @@
     function actualizarResumen() {
         const total = transacciones.length;
         let importeTotal = 0;
+    
+        // ✅ Validación: asegurar que transacciones sea un array
+        if (Array.isArray(transacciones)) {
+            transacciones.forEach(trans => {
+                if (trans.estado !== 'anulada') {
+                    // ✅ Convertir a número ANTES de sumar
+                    const importeNum = parseFloat(calcularImporteTransaccion(trans)) || 0;
+                    importeTotal += importeNum;
+                }
+            });
+        }
+    
+        // ✅ Actualizar elementos del DOM con validación
+        const totalElem = document.getElementById('total-transacciones');
+        const importeElem = document.getElementById('importe-total');
+    
+        if (totalElem) {
+            totalElem.textContent = total;
+        }
         
-        transacciones.forEach(trans => {
-            if (trans.estado !== 'anulada') {
-                importeTotal += calcularImporteTransaccion(trans);
-            }
-        });
-        
-        document.getElementById('total-transacciones').textContent = total;
-        document.getElementById('importe-total').textContent = `RD$${importeTotal.toFixed(2)}`;
+        if (importeElem) {
+            // ✅ Formatear con separadores de miles (ej: RD$3,500.00)
+            const importeFormateado = importeTotal.toLocaleString('es-DO', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            importeElem.textContent = `RD$${importeFormateado}`;
+        }
+    
+        console.log(`📊 Resumen: ${total} transacciones, Total: RD$${importeTotal.toFixed(2)}`);
     }
 
     function filtrarTransacciones() {
