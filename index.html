@@ -1447,7 +1447,7 @@
                 <input list="clases-predefinidas" id="clase" placeholder="Seleccione una clase">
                 <datalist id="clases-predefinidas">
                     <option value="Administracion">
-                    <option value="Unidad Central">
+                    <option value="Unidad Aguiar">
                     <option value="Unidad JB">
                     <option value="Unidad Velez">
                 </datalist>
@@ -1491,7 +1491,20 @@
                             <th>CANT.</th>
                             <th>Tarifa</th>
                             <th>Importe</th>
-                            <th></th>
+                            <th style="text-align: center; padding: 0; width: 40px;">
+    <button type="button" 
+            onclick="imprimirRecibo()" 
+            title="Imprimir recibo" 
+            style="background: none; border: none; cursor: pointer; padding: 4px; margin: 0; line-height: 1; border-radius: 4px;"
+            onmouseover="this.style.backgroundColor='#e9ecef'"
+            onmouseout="this.style.backgroundColor='transparent'">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V11a2 2 0 0 0-2-2h-2"></path>
+            <path d="M6 9V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"></path>
+            <path d="M6 23h12"></path>
+        </svg>
+    </button>
+</th>
                         </tr>
                     </thead>
                     <tbody id="cuerpo-tabla"></tbody>
@@ -1638,7 +1651,23 @@
                         <th>Nota</th>
                         <th>Importe</th>
                         <th>Estado</th>
-                        <th>Acciones</th>
+                        <th style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+    Acciones
+    <button type="button" 
+            class="btn-imprimir-header" 
+            onclick="imprimirTablaCompleta()" 
+            title="Imprimir tabla completa"
+            style="background: none; border: none; cursor: pointer; padding: 4px; margin: 0; border-radius: 4px; transition: background-color 0.2s;"
+            onmouseover="this.style.backgroundColor='#e9ecef'"
+            onmouseout="this.style.backgroundColor='transparent'">
+        <!-- Icono de impresora SVG con BORDES NEGROS (visible en cualquier fondo) -->
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V11a2 2 0 0 0-2-2h-2"></path>
+            <path d="M6 9V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"></path>
+            <path d="M6 23h12"></path>
+        </svg>
+    </button>
+</th>
                     </tr>
                 </thead>
                 <tbody id="cuerpo-transacciones">
@@ -2298,16 +2327,16 @@
                         <div class="dropdown-acciones">
                             <button class="dropdown-btn" onclick="event.stopPropagation(); toggleDropdown(event, this)">▼</button>
                             <div class="dropdown-content">
-                                <div class="dropdown-item imprimir" onclick="event.stopPropagation(); imprimirTransaccion(${trans.recibo})">
-                                    Imprimir
-                                </div>
-                                <div class="dropdown-item anular" onclick="event.stopPropagation(); anularTransaccion(${index})">
-                                    Anular
-                                </div>
-                                <div class="dropdown-item eliminar" onclick="event.stopPropagation(); eliminarTransaccion(${index})">
-                                    Eliminar
-                                </div>
-                            </div>
+    <div class="dropdown-item imprimir" onclick="event.stopPropagation(); imprimirReciboIndividual(${index})">
+        Imprimir
+    </div>
+    <div class="dropdown-item anular" onclick="event.stopPropagation(); anularTransaccion(${index})">
+        Anular
+    </div>
+    <div class="dropdown-item eliminar" onclick="event.stopPropagation(); eliminarTransaccion(${index})">
+        Eliminar
+    </div>
+</div>
                         </div>
                     </div>
                 </td>
@@ -2466,7 +2495,259 @@
     
         console.log(`📊 Resumen: ${total} transacciones, Total: RD$${importeTotal.toFixed(2)}`);
     }
+    function imprimirTablaCompleta() {
+    console.log('[IMPRESIÓN] Iniciando proceso de impresión...');
+    
+    // Buscar la tabla por múltiples selectores (más robusto)
+    let tabla = document.querySelector('#tabla-transacciones') || 
+                document.querySelector('.tabla-transacciones') ||
+                document.querySelector('#cuerpo-transacciones')?.closest('table');
+    
+    if (!tabla) {
+        // Intentar encontrar cualquier tabla en la pantalla de gestión
+        const gestionScreen = document.getElementById('gestionScreen');
+        if (gestionScreen) {
+            tabla = gestionScreen.querySelector('table');
+        }
+    }
+    
+    if (!tabla) {
+        alert('❌ No se encontró la tabla de transacciones para imprimir.\n\nPor favor, asegúrate de estar en la sección "Gestión".');
+        console.error('[IMPRESIÓN] ERROR: No se encontró ninguna tabla');
+        return;
+    }
+    
+    console.log('[IMPRESIÓN] Tabla encontrada:', tabla);
+    
+    // Verificar si la tabla tiene datos
+    const filas = tabla.querySelectorAll('tbody tr:not(.fila-detalles)');
+    const filasVisibles = Array.from(filas).filter(fila => fila.style.display !== 'none');
+    
+    if (filasVisibles.length === 0) {
+        alert('⚠️ La tabla está vacía.\n\nNo hay transacciones para imprimir.\n\nPor favor, carga los datos primero haciendo clic en "Gestión".');
+        console.warn('[IMPRESIÓN] Advertencia: Tabla vacía');
+        return;
+    }
+    
+    console.log(`[IMPRESIÓN] Tabla tiene ${filasVisibles.length} filas visibles`);
+    
+    // Clonar tabla y preparar para impresión
+    const tablaClonada = tabla.cloneNode(true);
+    
+    // Eliminar filas de detalles ocultas
+    const detallesRows = tablaClonada.querySelectorAll('.fila-detalles');
+    detallesRows.forEach(row => {
+        if (row.style.display === 'none' || row.classList.contains('fila-detalles')) {
+            row.remove();
+        }
+    });
+    
+    // ✅ ELIMINAR COLUMNA "ACCIONES" (última columna)
+    const headerRow = tablaClonada.querySelector('thead tr');
+    const lastHeader = headerRow.querySelector('th:last-child');
+    if (lastHeader) lastHeader.remove();
 
+    const bodyRows = tablaClonada.querySelectorAll('tbody tr');
+    bodyRows.forEach(row => {
+        const lastCell = row.querySelector('td:last-child');
+        if (lastCell) lastCell.remove();
+    });
+    // ✅ FIN DE ELIMINACIÓN DE COLUMNA
+    
+    // Eliminar botones y elementos de interacción
+    const botones = tablaClonada.querySelectorAll('button, a, .dropdown-acciones');
+    botones.forEach(btn => btn.remove());
+    
+    // Obtener totales
+    const totalTransacciones = document.getElementById('total-transacciones')?.textContent || '0';
+    const importeTotal = document.getElementById('importe-total')?.textContent || 'RD$0.00';
+    
+    // Generar contenido HTML
+    const contenido = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Transacciones - DICOX</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            padding: 40px;
+            background: #f8f9fa;
+            color: #212529;
+        }
+        @media print {
+            body { 
+                padding: 20px; 
+                background: white; 
+            }
+            .no-imprimir { 
+                display: none !important; 
+            }
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #0d47a1;
+            padding-bottom: 15px;
+        }
+        .header h1 {
+            font-size: 28px;
+            color: #0d47a1;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+        .header .subtitle {
+            font-size: 18px;
+            color: #1976d2;
+            margin-bottom: 8px;
+        }
+        .header .fecha {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        .tabla-container {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        th {
+            background: linear-gradient(to bottom, #e3f2fd, #bbdefb);
+            color: #0d47a1;
+            font-weight: 700;
+            padding: 12px 10px;
+            text-align: left;
+            border: 1px solid #90caf9;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            font-size: 14px;
+            color: #424242;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .estado-pagada {
+            background: #e8f5e9 !important;
+            color: #2e7d32 !important;
+            font-weight: 600;
+        }
+        .estado-anulada {
+            background: #ffebee !important;
+            color: #c62828 !important;
+            font-weight: 600;
+        }
+        .importe {
+            font-weight: 700;
+            color: #1976d2;
+        }
+        .resumen {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-radius: 10px;
+            border-left: 4px solid #0d47a1;
+        }
+        .resumen-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #90caf9;
+        }
+        .resumen-item:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 16px;
+            color: #0d47a1;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 2px solid #0d47a1;
+        }
+        .no-imprimir {
+            text-align: center;
+            margin-top: 25px;
+            padding: 15px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #856404;
+        }
+        @page {
+            margin: 1.5cm;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>RESONANCIA MAGNÉTICA DOMINICANA, S.R.L.</h1>
+        <div class="subtitle">Reporte de Transacciones de Venta</div>
+        <div class="fecha">Generado el: ${new Date().toLocaleDateString('es-DO', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        })}</div>
+    </div>
+    
+    <div class="tabla-container">
+        ${tablaClonada.outerHTML}
+    </div>
+    
+    <div class="resumen">
+        <div class="resumen-item">
+            <span>Total de transacciones:</span>
+            <span>${totalTransacciones}</span>
+        </div>
+        <div class="resumen-item">
+            <span>Importe total:</span>
+            <span>${importeTotal}</span>
+        </div>
+    </div>
+    
+    <div class="no-imprimir">
+        ✅ Reporte generado desde Sistema DICOX - Plataforma de Gestión Médica
+    </div>
+    
+    <script>
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 500);
+        };
+    <\/script>
+</body>
+</html>
+    `;
+
+    // Crear ventana de impresión
+    const ventanaImpresion = window.open('', '_blank', 'width=1000,height=800,scrollbars=yes');
+    if (!ventanaImpresion) {
+        alert('⚠️ Por favor, permite las ventanas emergentes para imprimir');
+        return;
+    }
+
+    // Escribir contenido
+    ventanaImpresion.document.write(contenido);
+    ventanaImpresion.document.close();
+    
+    console.log('[IMPRESIÓN] ✅ Ventana de impresión abierta correctamente');
+    console.log('[IMPRESIÓN] Filas encontradas:', filasVisibles.length);
+}
     function filtrarTransacciones() {
         const tipo = document.getElementById('filtro-tipo').value;
         const fecha = document.getElementById('filtro-fecha').value;
@@ -2685,6 +2966,379 @@
             button.addEventListener('click', createRipple);
         });
     });
+    function imprimirRecibo() {
+    try {
+        // Obtener datos del formulario
+        var cliente = document.getElementById('cliente').value.trim() || 'Cliente';
+        var nombrePaciente = document.getElementById('direccion') ? document.getElementById('direccion').value.trim() : '';
+        var recibo = document.getElementById('numero-recibo').value.trim() || 'N/A';
+        var fechaInput = document.getElementById('fecha-recibo').value || '';
+        
+        // Formatear fecha a DD/MM/AAAA
+        var fechaFormateada = 'N/A';
+        if (fechaInput) {
+            var parts = fechaInput.split('-');
+            if (parts.length === 3) {
+                fechaFormateada = parts[2] + '/' + parts[1] + '/' + parts[0];
+            }
+        }
+        
+        // Obtener datos de la tabla de servicios
+        var tbody = document.querySelector('#tabla-servicios tbody');
+        var filasHTML = '';
+        var totalImporte = 0;
+        
+        if (tbody) {
+            for (var i = 0; i < tbody.rows.length; i++) {
+                var row = tbody.rows[i];
+                if (row.cells.length < 7) continue;
+                
+                var num = i + 1;
+                var fechaCell = row.cells[1].querySelector('input');
+                var productoCell = row.cells[2].querySelector('input');
+                var descripcionCell = row.cells[3].querySelector('input');
+                var cantidadCell = row.cells[4].querySelector('input');
+                var tarifaCell = row.cells[5].querySelector('input');
+                var importeCell = row.cells[6].querySelector('input');
+                
+                var fechaVal = fechaCell ? fechaCell.value : '';
+                var producto = productoCell ? productoCell.value.trim() : '';
+                var descripcion = descripcionCell ? descripcionCell.value.trim() : '';
+                var cantidad = cantidadCell ? cantidadCell.value.trim() : '1';
+                var tarifa = tarifaCell ? parseFloat(tarifaCell.value) : 0;
+                var importe = importeCell ? parseFloat(importeCell.value) : 0;
+                
+                if (!producto) continue;
+                
+                var fechaFila = '';
+                if (fechaVal) {
+                    var fParts = fechaVal.split('-');
+                    if (fParts.length === 3) {
+                        fechaFila = fParts[2] + '/' + fParts[1] + '/' + fParts[0];
+                    }
+                }
+                
+                totalImporte += importe;
+                
+                filasHTML += '<tr><td style="text-align:center;padding:6px;">' + num + '</td>' +
+                    '<td style="padding:6px;">' + fechaFila + '</td>' +
+                    '<td style="padding:6px;">' + producto + '</td>' +
+                    '<td style="padding:6px;">' + descripcion + '</td>' +
+                    '<td style="text-align:center;padding:6px;">' + cantidad + '</td>' +
+                    '<td style="text-align:right;padding:6px;">RD$' + tarifa.toFixed(2) + '</td>' +
+                    '<td style="text-align:right;padding:6px;font-weight:bold;color:#28a745;">RD$' + importe.toFixed(2) + '</td></tr>';
+            }
+        }
+        
+        if (!filasHTML) {
+            filasHTML = '<tr><td colspan="7" style="text-align:center;padding:15px;color:#6c757d;">No hay servicios agregados</td></tr>';
+        }
+        
+        // Obtener totales
+        var subtotal = document.getElementById('subtotal-texto') ? document.getElementById('subtotal-texto').textContent : 'RD$0.00';
+        var total = document.getElementById('total-texto') ? document.getElementById('total-texto').textContent : 'RD$0.00';
+        var importeRecibido = document.getElementById('importe-recibido') ? document.getElementById('importe-recibido').value : '0.00';
+        var saldo = document.getElementById('saldo-texto') ? document.getElementById('saldo-texto').textContent : 'RD$0.00';
+        
+        // Generar contenido HTML SIN TEMPLATE LITERALS (concatenación segura)
+        var contenido = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Recibo de Ingreso - DICOX</title>' +
+            '<style>' +
+            '*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:40px;background:white;color:#000;line-height:1.5}.encabezado{text-align:center;margin-bottom:25px;border-bottom:3px solid #0d47a1;padding-bottom:15px}.encabezado h1{font-size:26px;font-weight:800;color:#0d47a1;letter-spacing:1px;margin-bottom:8px}.encabezado h2{font-size:20px;font-weight:700;color:#1976d2;margin-top:5px}.datos-recibo{display:flex;justify-content:space-between;margin:25px 0 20px;font-size:14px;padding:15px;background:#f8f9fa;border-radius:8px;border-left:4px solid #0d47a1}.bloque-dato{margin-bottom:8px}.etiqueta{font-weight:700;color:#0d47a1;margin-bottom:3px;font-size:13px}.valor{font-weight:600;color:#2c3e50;font-size:15px}table{width:100%;border-collapse:collapse;margin:25px 0;box-shadow:0 2px 8px rgba(0,0,0,0.08)}th{background:linear-gradient(to bottom,#e3f2fd,#bbdefb);color:#0d47a1;font-weight:700;padding:10px 8px;text-align:left;border:1px solid #90caf9;font-size:12px;text-transform:uppercase;letter-spacing:0.5px}td{padding:8px;border:1px solid #e0e0e0;font-size:13px;color:#424242}tr:nth-child(even){background-color:#f8f9fa}tr:hover{background-color:#e3f2fd}.totales{margin-top:30px;text-align:right;padding:20px;background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:10px;border:1px solid #90caf9;max-width:350px;float:right;box-shadow:0 2px 10px rgba(0,0,0,0.08)}.total-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #90caf9}.total-item:last-child{border-bottom:none;margin-top:10px;padding-top:12px;font-weight:700;font-size:16px;color:#0d47a1;border-top:2px solid #0d47a1}.pie{margin-top:40px;text-align:center;padding-top:15px;border-top:1px solid #ddd;color:#6c757d;font-size:12px}@media print{body{padding:20px}.no-imprimir{display:none}}</style>' +
+            '</head><body>' +
+            '<div class="encabezado">' +
+            '<h1>RESONANCIA MAGNETICA DOMINICANA, SRL</h1>' +
+            '<h2>RECIBO DE INGRESO</h2>' +
+            '</div>' +
+            '<div class="datos-recibo">' +
+            '<div class="bloque-dato">' +
+                '<div class="etiqueta">FACTURAR A</div>' +
+                '<div class="valor">' + cliente + '</div>' +
+                (nombrePaciente ? '<div style="margin-top:5px;font-weight:600;color:#2c3e50;font-size:14px;">' + nombrePaciente + '</div>' : '') +
+            '</div>' +
+            '<div class="bloque-dato" style="text-align:right;">' +
+            '<div class="etiqueta">RECIBO N.&ordm;</div><div class="valor">' + recibo + '</div>' +
+            '<div class="etiqueta" style="margin-top:8px;">FECHA</div><div class="valor">' + fechaFormateada + '</div>' +
+            '</div></div>' +
+            '<table><thead><tr>' +
+            '<th>#</th><th>Fecha</th><th>Prodct/Servicio</th><th>Descrp</th><th>CANT.</th><th>Tarifa</th><th>Importe</th>' +
+            '</tr></thead><tbody>' + filasHTML + '</tbody></table>' +
+            '<div class="totales">' +
+            '<div class="total-item"><span>Total:</span><span>' + total + '</span></div>' +
+            '<div class="total-item"><span>Saldo pendiente:</span><span>' + saldo + '</span></div>' +
+            '</div>' +
+            '<div class="pie">&#10004; Recibo generado desde Sistema DICOX - Plataforma de Gesti&oacute;n M&eacute;dica<br>' +
+            new Date().toLocaleDateString('es-DO', {weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}) +
+            '</div>' +
+            '<script>window.onload=function(){setTimeout(function(){window.print();},500);}<\/script>' +
+            '</body></html>';
+        
+        // Abrir ventana de impresión
+        var win = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
+        if (!win) {
+            alert('⚠️ Por favor, permite las ventanas emergentes para imprimir');
+            return;
+        }
+        win.document.write(contenido);
+        win.document.close();
+        
+        console.log('🖨️ Recibo #' + recibo + ' listo para imprimir');
+        
+    } catch (e) {
+        console.error('❌ Error imprimirRecibo:', e);
+        alert('❌ Error al generar el recibo para impresión:\n' + e.message);
+    }
+}
+    function imprimirReciboIndividual(index) {
+    try {
+        // Obtener el estudio desde el array global
+        const estudio = transacciones[index];
+        if (!estudio) {
+            alert('❌ Error: Estudio no encontrado');
+            console.error('[IMPRESIÓN] Estudio no encontrado en índice:', index);
+            return;
+        }
+        
+        // Formatear fecha a DD/MM/AAAA
+        let fechaFormateada = 'N/A';
+        if (estudio.fecha) {
+            const parts = estudio.fecha.split('-');
+            if (parts.length === 3) {
+                fechaFormateada = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+        }
+        
+        // Extraer nombre del cliente (sin " Cliente")
+        const clienteNombre = estudio.cliente.replace(' Cliente', '');
+        
+        // Obtener nombre del paciente (prioridad: nombre_paciente > nombre)
+        const nombrePaciente = estudio.nombre_paciente || estudio.nombre || 'N/A';
+        
+        // Formatear importe
+        const importe = parseFloat(estudio.importe) || 0;
+        const importeFormateado = importe.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        
+        // Generar contenido HTML para impresión
+        const contenido = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Recibo de Ingreso - DICOX</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body { 
+                    font-family: 'Segoe UI', 'Arial', sans-serif; 
+                    padding: 40px; 
+                    background: white; 
+                    color: #000;
+                    line-height: 1.5;
+                }
+                .encabezado {
+                    text-align: center;
+                    margin-bottom: 25px;
+                    border-bottom: 3px solid #0d47a1;
+                    padding-bottom: 15px;
+                }
+                .encabezado h1 {
+                    font-size: 26px;
+                    font-weight: 800;
+                    color: #0d47a1;
+                    letter-spacing: 1px;
+                    margin-bottom: 8px;
+                }
+                .encabezado h2 {
+                    font-size: 20px;
+                    font-weight: 700;
+                    color: #1976d2;
+                    margin-top: 5px;
+                }
+                .datos-recibo {
+                    display: flex;
+                    justify-content: space-between;
+                    margin: 25px 0 20px;
+                    font-size: 14px;
+                    padding: 15px;
+                    background: #f8f9fa;
+                    border-radius: 8px;
+                    border-left: 4px solid #0d47a1;
+                }
+                .bloque-dato {
+                    margin-bottom: 8px;
+                }
+                .etiqueta {
+                    font-weight: 700;
+                    color: #0d47a1;
+                    margin-bottom: 3px;
+                    font-size: 13px;
+                }
+                .valor {
+                    font-weight: 600;
+                    color: #2c3e50;
+                    font-size: 15px;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 25px 0;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                }
+                th {
+                    background: linear-gradient(to bottom, #e3f2fd, #bbdefb);
+                    color: #0d47a1;
+                    font-weight: 700;
+                    padding: 10px 8px;
+                    text-align: left;
+                    border: 1px solid #90caf9;
+                    font-size: 12px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                td {
+                    padding: 8px;
+                    border: 1px solid #e0e0e0;
+                    font-size: 13px;
+                    color: #424242;
+                }
+                tr:nth-child(even) {
+                    background-color: #f8f9fa;
+                }
+                .totales {
+                    margin-top: 30px;
+                    text-align: right;
+                    padding: 20px;
+                    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+                    border-radius: 10px;
+                    border: 1px solid #90caf9;
+                    max-width: 350px;
+                    float: right;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+                }
+                .total-item {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 6px 0;
+                    border-bottom: 1px dashed #90caf9;
+                }
+                .total-item:last-child {
+                    border-bottom: none;
+                    margin-top: 10px;
+                    padding-top: 12px;
+                    font-weight: 700;
+                    font-size: 16px;
+                    color: #0d47a1;
+                    border-top: 2px solid #0d47a1;
+                }
+                .pie {
+                    margin-top: 40px;
+                    text-align: center;
+                    padding-top: 15px;
+                    border-top: 1px solid #ddd;
+                    color: #6c757d;
+                    font-size: 12px;
+                }
+                @media print {
+                    body { padding: 20px; }
+                    .no-imprimir { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="encabezado">
+                <h1>RESONANCIA MAGNETICA DOMINICANA, SRL</h1>
+                <h2>RECIBO DE INGRESO</h2>
+            </div>
+            
+            <div class="datos-recibo">
+                <div class="bloque-dato">
+                    <div class="etiqueta">FACTURAR A</div>
+                    <div class="valor">${clienteNombre}</div>
+                    <div class="valor" style="margin-top:5px;font-weight:600;color:#2c3e50;font-size:14px;">${nombrePaciente}</div>
+                </div>
+                <div class="bloque-dato" style="text-align:right;">
+                    <div class="etiqueta">RECIBO N.º</div>
+                    <div class="valor">${estudio.recibo}</div>
+                    <div class="etiqueta" style="margin-top:8px;">FECHA</div>
+                    <div class="valor">${fechaFormateada}</div>
+                </div>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Fecha</th>
+                        <th>Prodct/Servicio</th>
+                        <th>Descrp</th>
+                        <th>CANT.</th>
+                        <th>Tarifa</th>
+                        <th>Importe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="text-align:center;padding:6px;">1</td>
+                        <td style="padding:6px;">${fechaFormateada}</td>
+                        <td style="padding:6px;">Servicio Médico</td>
+                        <td style="padding:6px;">${estudio.descripcion || 'Sin descripción'}</td>
+                        <td style="text-align:center;padding:6px;">1</td>
+                        <td style="text-align:right;padding:6px;">RD$${importeFormateado}</td>
+                        <td style="text-align:right;padding:6px;font-weight:bold;color:#28a745;">RD$${importeFormateado}</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="totales">
+                <div class="total-item">
+                    <span>Total:</span>
+                    <span>RD$${importeFormateado}</span>
+                </div>
+                <div class="total-item">
+                    <span>Saldo pendiente:</span>
+                    <span>RD$0.00</span>
+                </div>
+            </div>
+            
+            <div class="pie">
+                ✅ Recibo generado desde Sistema DICOX - Plataforma de Gestión Médica<br>
+                ${new Date().toLocaleDateString('es-DO', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}
+            </div>
+            
+            <script>
+                window.onload = function() {
+                    setTimeout(function() {
+                        window.print();
+                    }, 500);
+                };
+            <\/script>
+        </body>
+        </html>
+        `;
+        
+        // Abrir ventana de impresión
+        const win = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
+        if (!win) {
+            alert('⚠️ Por favor, permite las ventanas emergentes para imprimir');
+            return;
+        }
+        
+        win.document.write(contenido);
+        win.document.close();
+        
+        console.log(`🖨️ Imprimiendo recibo individual #${estudio.recibo}`);
+        alert(`🖨️ Preparando vista previa de impresión para Recibo #${estudio.recibo}...\n\nLa ventana de impresión se abrirá en 1 segundo.`);
+        
+    } catch (error) {
+        console.error('❌ Error al imprimir recibo individual:', error);
+        alert('❌ Error al generar el recibo para impresión:\n' + error.message);
+    }
+}
 </script>
 <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
 <script>
