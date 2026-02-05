@@ -35,7 +35,7 @@ def init_db():
         
         print("🔄 Creando tablas...")
         
-        # Tabla de estudios - AGREGAR columna estado
+        # Tabla de estudios
         cur.execute("""
             CREATE TABLE IF NOT EXISTS estudios (
                 id SERIAL PRIMARY KEY,
@@ -48,11 +48,38 @@ def init_db():
                 importe TEXT DEFAULT '0',
                 metodo_pago TEXT,
                 numero_aprobacion TEXT DEFAULT '',
-                estado TEXT DEFAULT 'pagada',  -- ← AGREGAR ESTA LÍNEA
+                estado TEXT DEFAULT 'pagada',
                 procesado BOOLEAN DEFAULT FALSE,
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+        
+        # ✅ AGREGAR ESTA SECCIÓN PARA MIGRAR COLUMNAS EXISTENTES
+        print("🔄 Verificando columnas existentes...")
+        
+        # Verificar si columna 'estado' existe
+        cur.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'estudios' AND column_name = 'estado'
+        """)
+        
+        if not cur.fetchone():
+            print("⚠️  Columna 'estado' no existe, agregando...")
+            cur.execute("ALTER TABLE estudios ADD COLUMN estado TEXT DEFAULT 'pagada'")
+            print("✅ Columna 'estado' agregada correctamente")
+        
+        # Verificar si columna 'numero_aprobacion' existe
+        cur.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'estudios' AND column_name = 'numero_aprobacion'
+        """)
+        
+        if not cur.fetchone():
+            print("⚠️  Columna 'numero_aprobacion' no existe, agregando...")
+            cur.execute("ALTER TABLE estudios ADD COLUMN numero_aprobacion TEXT DEFAULT ''")
+            print("✅ Columna 'numero_aprobacion' agregada correctamente")
         
         # Tabla de configuración (contador global)
         cur.execute("""
