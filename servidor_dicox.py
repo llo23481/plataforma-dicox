@@ -121,17 +121,18 @@ def api_anular_estudio(estudio_id):
                 'message': f'Estudio ID {estudio_id} no encontrado'
             }), 404
         
-        # Actualizar estado a 'anulada'
+        # Actualizar estado a 'anulada' Y importe a 0
         cur.execute("""
             UPDATE estudios
-            SET estado = 'anulada'
+            SET estado = 'anulada',
+                importe = '0'
             WHERE id = %s
         """, (estudio_id,))
         
         conn.commit()
         conn.close()
         
-        print(f"✅ Estudio ID {estudio_id} anulado correctamente")
+        print(f"✅ Estudio ID {estudio_id} anulado correctamente (importe = 0)")
         
         return jsonify({
             'success': True,
