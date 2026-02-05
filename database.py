@@ -155,23 +155,24 @@ def crear_estudio(data):
         # Obtener próximo recibo
         recibo_numero = obtener_proximo_recibo()
         
-        # Insertar estudio
+        # Insertar estudio - ✅ INCLUIR descripcion
         cur.execute("""
             INSERT INTO estudios (
                 nombre_paciente, descripcion, recibo, institucion,
-                cliente, fecha, importe, metodo_pago, procesado
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                cliente, fecha, importe, metodo_pago, numero_aprobacion, estado
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
         """, (
             data['nombre_paciente'],
-            data['descripcion'],
+            data['descripcion'],  # ← Descripción general del estudio
             str(recibo_numero),
             data.get('institucion', 'REMadom'),
             data.get('cliente', ''),
             data.get('fecha', datetime.now().strftime('%Y-%m-%d')),
             str(data.get('importe', 0)),
             data.get('metodo_pago', ''),
-            False
+            data.get('numero_aprobacion', ''),
+            'pagada'
         ))
         
         estudio_id = cur.fetchone()['id']
@@ -187,14 +188,15 @@ def crear_estudio(data):
         return {
             'id': estudio_id,
             'nombre_paciente': data['nombre_paciente'],
-            'descripcion': data['descripcion'],
+            'descripcion': data['descripcion'],  # ← Descripción general
             'recibo': str(recibo_numero),
             'institucion': data.get('institucion', 'REMadom'),
             'cliente': data.get('cliente', ''),
             'fecha': data.get('fecha', datetime.now().strftime('%Y-%m-%d')),
             'importe': str(data.get('importe', 0)),
             'metodo_pago': data.get('metodo_pago', ''),
-            'procesado': False
+            'numero_aprobacion': data.get('numero_aprobacion', ''),
+            'estado': 'pagada'
         }
     except Exception as e:
         print(f"❌ Error en crear_estudio: {e}")
