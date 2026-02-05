@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from database import crear_estudio, obtener_estudios_pendientes, marcar_procesado, health_check, obtener_proximo_recibo
+from database import crear_estudio, obtener_estudios_pendientes, marcar_procesado, health_check, obtener_proximo_recibo, get_db
 
 app = Flask(__name__)
 CORS(app)
@@ -105,6 +105,7 @@ def actualizar_estudio(estudio_id):
             'success': False,
             'message': str(e)
         }), 500
+
 
 
 
