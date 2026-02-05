@@ -49,6 +49,9 @@ def actualizar_estudio(estudio_id):
     try:
         data = request.get_json()
         
+        print(f"🔄 Actualizando estudio ID: {estudio_id}")
+        print(f"   Datos recibidos: {data}")
+        
         if not data:
             return jsonify({
                 'success': False,
@@ -60,13 +63,18 @@ def actualizar_estudio(estudio_id):
         
         # Verificar que el estudio exista
         cur.execute("SELECT id FROM estudios WHERE id = %s", (estudio_id,))
-        if not cur.fetchone():
+        resultado = cur.fetchone()
+        
+        if not resultado:
+            print(f"❌ Estudio ID {estudio_id} no encontrado")
             return jsonify({
                 'success': False,
-                'message': 'Estudio no encontrado'
+                'message': f'Estudio ID {estudio_id} no encontrado'
             }), 404
         
-        # Actualizar estudio
+        print(f"✅ Estudio ID {estudio_id} encontrado, actualizando...")
+        
+        # Actualizar estudio (sin numero_aprobacion si no existe)
         cur.execute("""
             UPDATE estudios
             SET nombre_paciente = %s,
@@ -74,22 +82,22 @@ def actualizar_estudio(estudio_id):
                 cliente = %s,
                 fecha = %s,
                 importe = %s,
-                metodo_pago = %s,
-                numero_aprobacion = %s
+                metodo_pago = %s
             WHERE id = %s
         """, (
-            data.get('nombre_paciente'),
-            data.get('descripcion'),
-            data.get('cliente'),
-            data.get('fecha'),
+            data.get('nombre_paciente', ''),
+            data.get('descripcion', ''),
+            data.get('cliente', ''),
+            data.get('fecha', ''),
             str(data.get('importe', 0)),
-            data.get('metodo_pago'),
-            data.get('numero_aprobacion', ''),
+            data.get('metodo_pago', ''),
             estudio_id
         ))
         
         conn.commit()
         conn.close()
+        
+        print(f"✅ Estudio ID {estudio_id} actualizado correctamente")
         
         return jsonify({
             'success': True,
@@ -98,17 +106,10 @@ def actualizar_estudio(estudio_id):
         })
         
     except Exception as e:
-        print(f"❌ Error al actualizar estudio: {e}")
+        print(f"❌ Error al actualizar estudio ID {estudio_id}: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({
             'success': False,
             'message': str(e)
         }), 500
-
-
-
-
-
-
-
