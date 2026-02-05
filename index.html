@@ -1476,8 +1476,8 @@
                 </datalist>
             </div>
             <div class="form-group">
-                <label for="referencia">N.º de referencia:</label>
-                <input type="text" id="referencia" placeholder="Número de referencia">
+                <label for="descripcion">Descripción:</label>
+                <input type="text" id="descripcion" placeholder="Descripción del estudio">
             </div>
             <div style="visibility: hidden;"></div>
         </div>
@@ -3049,15 +3049,16 @@
     });
     function imprimirRecibo() {
     try {
-        // Obtener datos del formulario
+        // Obtener datos del formulario - INCLUYENDO Descripción general
         var cliente = document.getElementById('cliente').value.trim() || 'Cliente';
         var nombrePaciente = document.getElementById('direccion') ? document.getElementById('direccion').value.trim() : '';
         var recibo = document.getElementById('numero-recibo').value.trim() || 'N/A';
         var fechaInput = document.getElementById('fecha-recibo').value || '';
         var metodoPago = document.getElementById('metodo-pago').value.trim() || 'N/A';
         var numeroAprobacion = document.getElementById('numero-aprobacion').value.trim() || '';
+        var descripcionGeneral = document.getElementById('descripcion') ? document.getElementById('descripcion').value.trim() : ''; // ← CAMPO GENERAL "Descripción:"
         
-        // Formatear fecha a DD/MM/AAAA
+        // Formatear fecha
         var fechaFormateada = 'N/A';
         if (fechaInput) {
             var parts = fechaInput.split('-');
@@ -3079,14 +3080,14 @@
                 var num = i + 1;
                 var fechaCell = row.cells[1].querySelector('input');
                 var productoCell = row.cells[2].querySelector('input');
-                var descripcionCell = row.cells[3].querySelector('input');
+                var descripcionCell = row.cells[3].querySelector('input'); // ← Descrp de SERVICIO
                 var cantidadCell = row.cells[4].querySelector('input');
                 var tarifaCell = row.cells[5].querySelector('input');
                 var importeCell = row.cells[6].querySelector('input');
                 
                 var fechaVal = fechaCell ? fechaCell.value : '';
                 var producto = productoCell ? productoCell.value.trim() : '';
-                var descripcion = descripcionCell ? descripcionCell.value.trim() : '';
+                var descripcionServicio = descripcionCell ? descripcionCell.value.trim() : ''; // ← Descrp del servicio
                 var cantidad = cantidadCell ? cantidadCell.value.trim() : '1';
                 var tarifa = tarifaCell ? parseFloat(tarifaCell.value) : 0;
                 var importe = importeCell ? parseFloat(importeCell.value) : 0;
@@ -3103,10 +3104,11 @@
                 
                 totalImporte += importe;
                 
+                // ✅ USAR descripcionServicio en la tabla
                 filasHTML += '<tr><td style="text-align:center;padding:6px;">' + num + '</td>' +
                     '<td style="padding:6px;">' + fechaFila + '</td>' +
                     '<td style="padding:6px;">' + producto + '</td>' +
-                    '<td style="padding:6px;">' + descripcion + '</td>' +
+                    '<td style="padding:6px;">' + descripcionServicio + '</td>' + // ← Descrp del servicio
                     '<td style="text-align:center;padding:6px;">' + cantidad + '</td>' +
                     '<td style="text-align:right;padding:6px;">RD$' + tarifa.toFixed(2) + '</td>' +
                     '<td style="text-align:right;padding:6px;font-weight:bold;color:#28a745;">RD$' + importe.toFixed(2) + '</td></tr>';
@@ -3123,10 +3125,10 @@
         var importeRecibido = document.getElementById('importe-recibido') ? document.getElementById('importe-recibido').value : '0.00';
         var saldo = document.getElementById('saldo-texto') ? document.getElementById('saldo-texto').textContent : 'RD$0.00';
         
-        // Generar contenido HTML SIN TEMPLATE LITERALS (concatenación segura)
+        // Generar contenido HTML
         var contenido = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Recibo de Ingreso - DICOX</title>' +
             '<style>' +
-            '*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:40px;background:white;color:#000;line-height:1.5}.encabezado{text-align:center;margin-bottom:25px;border-bottom:3px solid #0d47a1;padding-bottom:15px}.encabezado h1{font-size:26px;font-weight:800;color:#0d47a1;letter-spacing:1px;margin-bottom:8px}.encabezado h2{font-size:20px;font-weight:700;color:#1976d2;margin-top:5px}.datos-recibo{display:flex;justify-content:space-between;margin:25px 0 20px;font-size:14px;padding:15px;background:#f8f9fa;border-radius:8px;border-left:4px solid #0d47a1}.bloque-dato{margin-bottom:8px}.etiqueta{font-weight:700;color:#0d47a1;margin-bottom:3px;font-size:13px}.valor{font-weight:600;color:#2c3e50;font-size:15px}.metodo-pago{font-size:12px!important;color:#6c757d!important;margin-top:5px!important;font-weight:normal!important}.numero-aprobacion{font-size:14px!important;color:#0d47a1!important;font-weight:bold!important;margin-top:8px!important;padding-top:8px!important;border-top:1px dashed #0d47a1!important}table{width:100%;border-collapse:collapse;margin:25px 0;box-shadow:0 2px 8px rgba(0,0,0,0.08)}th{background:linear-gradient(to bottom,#e3f2fd,#bbdefb);color:#0d47a1;font-weight:700;padding:10px 8px;text-align:left;border:1px solid #90caf9;font-size:12px;text-transform:uppercase;letter-spacing:0.5px}td{padding:8px;border:1px solid #e0e0e0;font-size:13px;color:#424242}tr:nth-child(even){background-color:#f8f9fa}tr:hover{background-color:#e3f2fd}.totales{margin-top:30px;text-align:right;padding:20px;background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:10px;border:1px solid #90caf9;max-width:350px;float:right;box-shadow:0 2px 10px rgba(0,0,0,0.08)}.total-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #90caf9}.total-item:last-child{border-bottom:none;margin-top:10px;padding-top:12px;font-weight:700;font-size:16px;color:#0d47a1;border-top:2px solid #0d47a1}.pie{margin-top:40px;text-align:center;padding-top:15px;border-top:1px solid #ddd;color:#6c757d;font-size:12px}@media print{body{padding:20px}.no-imprimir{display:none}}</style>' +
+            '*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:40px;background:white;color:#000;line-height:1.5}.encabezado{text-align:center;margin-bottom:25px;border-bottom:3px solid #0d47a1;padding-bottom:15px}.encabezado h1{font-size:26px;font-weight:800;color:#0d47a1;letter-spacing:1px;margin-bottom:8px}.encabezado h2{font-size:20px;font-weight:700;color:#1976d2;margin-top:5px}.datos-recibo{display:flex;justify-content:space-between;margin:25px 0 20px;font-size:14px;padding:15px;background:#f8f9fa;border-radius:8px;border-left:4px solid #0d47a1}.bloque-dato{margin-bottom:8px}.etiqueta{font-weight:700;color:#0d47a1;margin-bottom:3px;font-size:13px}.valor{font-weight:600;color:#2c3e50;font-size:15px}.metodo-pago{font-size:12px!important;color:#6c757d!important;margin-top:5px!important;font-weight:normal!important}.numero-aprobacion{font-size:14px!important;color:#0d47a1!important;font-weight:bold!important;margin-top:8px!important;padding-top:8px!important;border-top:1px dashed #0d47a1!important}.descripcion-general{font-size:13px!important;color:#555!important;margin-top:8px!important;font-style:italic!important}table{width:100%;border-collapse:collapse;margin:25px 0;box-shadow:0 2px 8px rgba(0,0,0,0.08)}th{background:linear-gradient(to bottom,#e3f2fd,#bbdefb);color:#0d47a1;font-weight:700;padding:10px 8px;text-align:left;border:1px solid #90caf9;font-size:12px;text-transform:uppercase;letter-spacing:0.5px}td{padding:8px;border:1px solid #e0e0e0;font-size:13px;color:#424242}tr:nth-child(even){background-color:#f8f9fa}.totales{margin-top:30px;text-align:right;padding:20px;background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:10px;border:1px solid #90caf9;max-width:350px;float:right;box-shadow:0 2px 10px rgba(0,0,0,0.08)}.total-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #90caf9}.total-item:last-child{border-bottom:none;margin-top:10px;padding-top:12px;font-weight:700;font-size:16px;color:#0d47a1;border-top:2px solid #0d47a1}.pie{margin-top:40px;text-align:center;padding-top:15px;border-top:1px solid #ddd;color:#6c757d;font-size:12px}@media print{body{padding:20px}.no-imprimir{display:none}}</style>' +
             '</head><body>' +
             '<div class="encabezado">' +
             '<h1>RESONANCIA MAGNETICA DOMINICANA, SRL</h1>' +
@@ -3135,14 +3137,17 @@
             '<div class="datos-recibo">' +
             '<div class="bloque-dato">' +
                 '<div class="etiqueta">FACTURAR A</div>' +
-                (nombrePaciente ? '<div class="valor" style="font-size:16px;font-weight:700;color:#0d47a1;margin-bottom:3px;">' + nombrePaciente + '</div>' : '') +
+                '<div class="valor" style="font-size:16px;font-weight:700;color:#0d47a1;margin-bottom:3px;">' + nombrePaciente + '</div>' +
                 '<div class="valor" style="font-size:14px;color:#424242;">' + cliente + '</div>' +
                 (numeroAprobacion ? '<div class="valor numero-aprobacion">N.° de Aprobación: ' + numeroAprobacion + '</div>' : '') +
+                (descripcionGeneral ? '<div class="valor descripcion-general">Descripción: ' + descripcionGeneral + '</div>' : '') + // ← ✅ CAMPO GENERAL AQUÍ
             '</div>' +
             '<div class="bloque-dato" style="text-align:right;">' +
                 (metodoPago !== 'N/A' ? '<div class="valor metodo-pago">Método de pago: ' + metodoPago + '</div>' : '') +
-                '<div class="etiqueta">RECIBO N.&ordm;</div><div class="valor">' + recibo + '</div>' +
-                '<div class="etiqueta" style="margin-top:8px;">FECHA</div><div class="valor">' + fechaFormateada + '</div>' +
+                '<div class="etiqueta">RECIBO N.&ordm;</div>' +
+                '<div class="valor">' + recibo + '</div>' +
+                '<div class="etiqueta" style="margin-top:8px;">FECHA</div>' +
+                '<div class="valor">' + fechaFormateada + '</div>' +
             '</div></div>' +
             '<table><thead><tr>' +
             '<th>#</th><th>Fecha</th><th>Prodct/Servicio</th><th>Descrp</th><th>CANT.</th><th>Tarifa</th><th>Importe</th>' +
@@ -3165,17 +3170,15 @@
         }
         win.document.write(contenido);
         win.document.close();
-        
         console.log('🖨️ Recibo #' + recibo + ' listo para imprimir');
         
     } catch (e) {
-        console.error('❌ Error imprimirRecibo:', e);
+        console.error('❌ Error al imprimir recibo:', e);
         alert('❌ Error al generar el recibo para impresión:\n' + e.message);
     }
 }
     function imprimirReciboIndividual(index) {
     try {
-        // Obtener el estudio desde el array global
         var estudio = transacciones[index];
         if (!estudio) {
             alert('❌ Error: Estudio no encontrado');
@@ -3183,7 +3186,7 @@
             return;
         }
         
-        // Formatear fecha a DD/MM/AAAA
+        // Formatear fecha
         var fechaFormateada = 'N/A';
         if (estudio.fecha) {
             var parts = estudio.fecha.split('-');
@@ -3192,24 +3195,18 @@
             }
         }
         
-        // Extraer nombre del cliente (sin " Cliente")
         var clienteNombre = estudio.cliente.replace(' Cliente', '');
-        
-        // Obtener nombre del paciente (prioridad: nombre_paciente > nombre)
         var nombrePaciente = estudio.nombre_paciente || estudio.nombre || 'N/A';
-        
-        // Obtener método de pago y número de aprobación
         var metodoPago = estudio.metodo_pago || 'N/A';
         var numeroAprobacion = estudio.numero_aprobacion || '';
-        
-        // Formatear importe
+        var descripcionGeneral = estudio.descripcion || ''; // ← ✅ Descripción GENERAL del estudio
         var importe = parseFloat(estudio.importe) || 0;
         var importeFormateado = importe.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         
-        // Generar contenido HTML SIN TEMPLATE LITERALS (concatenación segura)
+        // Generar contenido HTML
         var contenido = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Recibo de Ingreso - DICOX</title>' +
             '<style>' +
-            '*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:40px;background:white;color:#000;line-height:1.5}.encabezado{text-align:center;margin-bottom:25px;border-bottom:3px solid #0d47a1;padding-bottom:15px}.encabezado h1{font-size:26px;font-weight:800;color:#0d47a1;letter-spacing:1px;margin-bottom:8px}.encabezado h2{font-size:20px;font-weight:700;color:#1976d2;margin-top:5px}.datos-recibo{display:flex;justify-content:space-between;margin:25px 0 20px;font-size:14px;padding:15px;background:#f8f9fa;border-radius:8px;border-left:4px solid #0d47a1}.bloque-dato{margin-bottom:8px}.etiqueta{font-weight:700;color:#0d47a1;margin-bottom:3px;font-size:13px}.valor{font-weight:600;color:#2c3e50;font-size:15px}.metodo-pago{font-size:12px!important;color:#6c757d!important;margin-top:5px!important;font-weight:normal!important}.numero-aprobacion{font-size:14px!important;color:#0d47a1!important;font-weight:bold!important;margin-top:8px!important;padding-top:8px!important;border-top:1px dashed #0d47a1!important}table{width:100%;border-collapse:collapse;margin:25px 0;box-shadow:0 2px 8px rgba(0,0,0,0.08)}th{background:linear-gradient(to bottom,#e3f2fd,#bbdefb);color:#0d47a1;font-weight:700;padding:10px 8px;text-align:left;border:1px solid #90caf9;font-size:12px;text-transform:uppercase;letter-spacing:0.5px}td{padding:8px;border:1px solid #e0e0e0;font-size:13px;color:#424242}tr:nth-child(even){background-color:#f8f9fa}tr:hover{background-color:#e3f2fd}.totales{margin-top:30px;text-align:right;padding:20px;background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:10px;border:1px solid #90caf9;max-width:350px;float:right;box-shadow:0 2px 10px rgba(0,0,0,0.08)}.total-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #90caf9}.total-item:last-child{border-bottom:none;margin-top:10px;padding-top:12px;font-weight:700;font-size:16px;color:#0d47a1;border-top:2px solid #0d47a1}.pie{margin-top:40px;text-align:center;padding-top:15px;border-top:1px solid #ddd;color:#6c757d;font-size:12px}@media print{body{padding:20px}.no-imprimir{display:none}}</style>' +
+            '*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:40px;background:white;color:#000;line-height:1.5}.encabezado{text-align:center;margin-bottom:25px;border-bottom:3px solid #0d47a1;padding-bottom:15px}.encabezado h1{font-size:26px;font-weight:800;color:#0d47a1;letter-spacing:1px;margin-bottom:8px}.encabezado h2{font-size:20px;font-weight:700;color:#1976d2;margin-top:5px}.datos-recibo{display:flex;justify-content:space-between;margin:25px 0 20px;font-size:14px;padding:15px;background:#f8f9fa;border-radius:8px;border-left:4px solid #0d47a1}.bloque-dato{margin-bottom:8px}.etiqueta{font-weight:700;color:#0d47a1;margin-bottom:3px;font-size:13px}.valor{font-weight:600;color:#2c3e50;font-size:15px}.metodo-pago{font-size:12px!important;color:#6c757d!important;margin-top:5px!important;font-weight:normal!important}.numero-aprobacion{font-size:14px!important;color:#0d47a1!important;font-weight:bold!important;margin-top:8px!important;padding-top:8px!important;border-top:1px dashed #0d47a1!important}.descripcion-general{font-size:13px!important;color:#555!important;margin-top:8px!important;font-style:italic!important}table{width:100%;border-collapse:collapse;margin:25px 0;box-shadow:0 2px 8px rgba(0,0,0,0.08)}th{background:linear-gradient(to bottom,#e3f2fd,#bbdefb);color:#0d47a1;font-weight:700;padding:10px 8px;text-align:left;border:1px solid #90caf9;font-size:12px;text-transform:uppercase;letter-spacing:0.5px}td{padding:8px;border:1px solid #e0e0e0;font-size:13px;color:#424242}tr:nth-child(even){background-color:#f8f9fa}.totales{margin-top:30px;text-align:right;padding:20px;background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:10px;border:1px solid #90caf9;max-width:350px;float:right;box-shadow:0 2px 10px rgba(0,0,0,0.08)}.total-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #90caf9}.total-item:last-child{border-bottom:none;margin-top:10px;padding-top:12px;font-weight:700;font-size:16px;color:#0d47a1;border-top:2px solid #0d47a1}.pie{margin-top:40px;text-align:center;padding-top:15px;border-top:1px solid #ddd;color:#6c757d;font-size:12px}@media print{body{padding:20px}.no-imprimir{display:none}}</style>' +
             '</head><body>' +
             '<div class="encabezado">' +
             '<h1>RESONANCIA MAGNETICA DOMINICANA, SRL</h1>' +
@@ -3221,6 +3218,7 @@
                 '<div class="valor" style="font-size:16px;font-weight:700;color:#0d47a1;margin-bottom:3px;">' + nombrePaciente + '</div>' +
                 '<div class="valor" style="font-size:14px;color:#424242;">' + clienteNombre + '</div>' +
                 (numeroAprobacion ? '<div class="valor numero-aprobacion">N.° de Aprobación: ' + numeroAprobacion + '</div>' : '') +
+                (descripcionGeneral ? '<div class="valor descripcion-general">Descripción: ' + descripcionGeneral + '</div>' : '') + // ← ✅ CAMPO GENERAL AQUÍ
             '</div>' +
             '<div class="bloque-dato" style="text-align:right;">' +
                 (metodoPago !== 'N/A' ? '<div class="valor metodo-pago">Método de pago: ' + metodoPago + '</div>' : '') +
@@ -3235,7 +3233,7 @@
             '<tr><td style="text-align:center;padding:6px;">1</td>' +
             '<td style="padding:6px;">' + fechaFormateada + '</td>' +
             '<td style="padding:6px;">Servicio Médico</td>' +
-            '<td style="padding:6px;">' + (estudio.descripcion || 'Sin descripción') + '</td>' +
+            '<td style="padding:6px;">' + (estudio.descripcion_servicio || 'Sin descripción') + '</td>' + // ← Descrp del servicio
             '<td style="text-align:center;padding:6px;">1</td>' +
             '<td style="text-align:right;padding:6px;">RD$' + importeFormateado + '</td>' +
             '<td style="text-align:right;padding:6px;font-weight:bold;color:#28a745;">RD$' + importeFormateado + '</td></tr>' +
@@ -3258,7 +3256,6 @@
         }
         win.document.write(contenido);
         win.document.close();
-        
         console.log('🖨️ Imprimiendo recibo individual #' + estudio.recibo);
         alert('🖨️ Preparando vista previa de impresión para Recibo #' + estudio.recibo + '...\n\nLa ventana de impresión se abrirá en 1 segundo.');
         
