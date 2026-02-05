@@ -1412,7 +1412,7 @@
                     <option value="ARS RENACER Cliente">
                     <option value="ARS SIMAG Cliente">
                     <option value="ARS UNIVERSAL Cliente">
-                    <option value="CD Cliente">
+                    <option value="REGRABACION CD Cliente">
                     <option value="CONTRIBUTIVO Cliente">
                     <option value="COPAGO CENTRAL Cliente">
                     <option value="COPAGO UNIVERSAL Cliente">
@@ -1442,18 +1442,26 @@
                 <label for="numero-recibo">N.° de recibo de venta:</label>
                 <input type="text" id="numero-recibo" readonly>
             </div>
-            <div class="form-group">
-                <label for="clase">Clase:</label>
-                <input list="clases-predefinidas" id="clase" placeholder="Seleccione una clase">
-                <datalist id="clases-predefinidas">
-                    <option value="Administracion">
-                    <option value="Unidad Aguiar">
-                    <option value="Unidad JB">
-                    <option value="Unidad Velez">
-                </datalist>
-            </div>
-            <div style="visibility: hidden;"></div>
-        </div>
+           <div class="form-group">
+               <label for="numero-aprobacion">N.° de Aprobación:</label>
+               <input type="text" id="numero-aprobacion" placeholder="Ej: APR-2026-001">
+           </div>
+           <div style="visibility: hidden;"></div>
+       </div>
+       <div class="form-row">
+           <div class="form-group">
+               <label for="clase">Clase:</label>
+               <input list="clases-predefinidas" id="clase" placeholder="Seleccione una clase">
+               <datalist id="clases-predefinidas">
+                   <option value="Administracion">
+                   <option value="Unidad Aguiar">
+                   <option value="Unidad JB">
+                   <option value="Unidad Velez">
+              </datalist>
+          </div>
+          <div style="visibility: hidden;"></div>
+          <div style="visibility: hidden;"></div>
+      </div>
 
         <div class="form-row">
             <div class="form-group">
@@ -1611,7 +1619,7 @@
                     <option value="ars-renacer">ARS RENACER</option>
                     <option value="ars-simag">ARS SIMAG</option>
                     <option value="ars-universal">ARS UNIVERSAL</option>
-                    <option value="cd">CD</option>
+                    <option value="cd">REGRABACION CD</option>
                     <option value="contributivo">CONTRIBUTIVO</option>
                     <option value="copago-central">COPAGO CENTRAL</option>
                     <option value="copago-universal">COPAGO UNIVERSAL</option>
@@ -1989,121 +1997,125 @@
     }
 
     function generarResumen() {
-        // CARGAR DATOS ACTUALIZADOS DE LOCALSTORAGE
-        transacciones = JSON.parse(localStorage.getItem('estudios_dicox') || '[]');
-        
-        const periodo = document.getElementById('periodo-informe').value;
-        const hoy = new Date();
-        let fechaInicio, fechaFin, rangoTexto;
-        
-        // Calcular rango de fechas según el período seleccionado
-        switch(periodo) {
-            case 'hoy':
-                fechaInicio = new Date(hoy);
-                fechaFin = new Date(hoy);
-                const diaHoy = hoy.getDate();
-                const mesHoy = hoy.toLocaleString('es-ES', { month: 'long' });
-                const anioHoy = hoy.getFullYear();
-                rangoTexto = `${diaHoy} ${mesHoy}, ${anioHoy}`;
-                break;
-            case 'semana':
-                fechaInicio = new Date(hoy);
-                fechaInicio.setDate(hoy.getDate() - hoy.getDay()); // Domingo
-                fechaFin = new Date(fechaInicio);
-                fechaFin.setDate(fechaInicio.getDate() + 6); // Sábado
-                rangoTexto = `${fechaInicio.getDate()}-${fechaFin.getDate()} ${mesHoy}, ${anioHoy}`;
-                break;
-            case 'mes':
-                fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-                fechaFin = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
-                rangoTexto = `1-${fechaFin.getDate()} ${mesHoy}, ${anioHoy}`;
-                break;
-            case 'trimestre':
-                const trimestre = Math.floor(hoy.getMonth() / 3);
-                fechaInicio = new Date(hoy.getFullYear(), trimestre * 3, 1);
-                fechaFin = new Date(hoy.getFullYear(), (trimestre + 1) * 3, 0);
-                const mesInicio = fechaInicio.toLocaleString('es-ES', { month: 'long' });
-                const mesFin = fechaFin.toLocaleString('es-ES', { month: 'long' });
-                rangoTexto = `1 ${mesInicio} - ${fechaFin.getDate()} ${mesFin}, ${anioHoy}`;
-                break;
-            case 'ano':
-                fechaInicio = new Date(hoy.getFullYear(), 0, 1);
-                fechaFin = new Date(hoy.getFullYear(), 11, 31);
-                rangoTexto = `${anioHoy}`;
-                break;
-        }
-        
-        // Actualizar el rango de fechas en el encabezado
-        document.getElementById('rango-fechas').textContent = rangoTexto;
-        
-        // Filtrar transacciones en el rango de fechas
-        const transaccionesFiltradas = transacciones.filter(t => {
-            if (t.estado === 'anulada') return false;
-            const fechaTrans = new Date(t.fecha);
-            return fechaTrans >= fechaInicio && fechaTrans <= fechaFin;
-        });
-        
-        // Calcular totales por cliente - CORREGIDO PARA TOMAR DATOS REALES
-        const totalesPorCliente = {};
-        clientesOrden.forEach(cliente => {
-            totalesPorCliente[cliente] = 0;
-        });
-        
-        transaccionesFiltradas.forEach(trans => {
-            // Extraer nombre del cliente y limpiar
-            let cliente = trans.cliente.replace(' Cliente', '').trim();
-            
-            // Buscar coincidencia exacta o parcial en la lista de clientes
-            const clienteMatch = clientesOrden.find(c => 
-                cliente.includes(c) || c.includes(cliente)
-            );
-            
-            if (clienteMatch) {
-                totalesPorCliente[clienteMatch] += (trans.importe || 0);
-            }
-        });
-        
-        // Mostrar en tabla
-        const cuerpo = document.getElementById('cuerpo-resumen');
-        cuerpo.innerHTML = '';
-        let totalGeneral = 0;
-        
-        clientesOrden.forEach(cliente => {
-            const importe = totalesPorCliente[cliente] || 0;
-            totalGeneral += importe;
-            
-            const fila = document.createElement('tr');
-            fila.innerHTML = `
-                <td class="cliente-fijo">${cliente}</td>
-                <td style="text-align: right;">${importe.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-            `;
-            cuerpo.appendChild(fila);
-        });
-        
-        // Fila de total
-        const filaTotal = document.createElement('tr');
-        filaTotal.innerHTML = `
-            <td><strong>TOTAL</strong></td>
-            <td style="text-align: right;"><strong>RD$ ${totalGeneral.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong></td>
-        `;
-        cuerpo.appendChild(filaTotal);
-        
-        // Actualizar fecha de devengo
-        const opcionesFecha = { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-            timeZoneName: 'short'
-        };
-        const fechaDevengo = new Date().toLocaleString('es-ES', opcionesFecha)
-            .replace('GMT-04:00', 'GMT-04:00')
-            .replace(',', '');
-        document.getElementById('fecha-devengo').textContent = fechaDevengo;
+    // CARGAR DATOS ACTUALIZADOS DE LOCALSTORAGE
+    transacciones = JSON.parse(localStorage.getItem('estudios_dicox') || '[]');
+    
+    const periodo = document.getElementById('periodo-informe').value;
+    const hoy = new Date();
+    let fechaInicio, fechaFin, rangoTexto;
+    
+    // Declarar variables de fecha al inicio para evitar errores
+    const diaHoy = hoy.getDate();
+    const mesHoy = hoy.toLocaleString('es-ES', { month: 'long' });
+    const anioHoy = hoy.getFullYear();
+    
+    // Calcular rango de fechas según el período seleccionado
+    switch(periodo) {
+        case 'hoy':
+            fechaInicio = new Date(hoy);
+            fechaFin = new Date(hoy);
+            rangoTexto = `${diaHoy} ${mesHoy}, ${anioHoy}`;
+            break;
+        case 'semana':
+            fechaInicio = new Date(hoy);
+            fechaInicio.setDate(hoy.getDate() - hoy.getDay()); // Domingo
+            fechaFin = new Date(fechaInicio);
+            fechaFin.setDate(fechaInicio.getDate() + 6); // Sábado
+            rangoTexto = `${fechaInicio.getDate()}-${fechaFin.getDate()} ${mesHoy}, ${anioHoy}`;
+            break;
+        case 'mes':
+            fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+            fechaFin = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+            rangoTexto = `1-${fechaFin.getDate()} ${mesHoy}, ${anioHoy}`;
+            break;
+        case 'trimestre':
+            const trimestre = Math.floor(hoy.getMonth() / 3);
+            fechaInicio = new Date(hoy.getFullYear(), trimestre * 3, 1);
+            fechaFin = new Date(hoy.getFullYear(), (trimestre + 1) * 3, 0);
+            const mesInicio = fechaInicio.toLocaleString('es-ES', { month: 'long' });
+            const mesFin = fechaFin.toLocaleString('es-ES', { month: 'long' });
+            rangoTexto = `1 ${mesInicio} - ${fechaFin.getDate()} ${mesFin}, ${anioHoy}`;
+            break;
+        case 'ano':
+            fechaInicio = new Date(hoy.getFullYear(), 0, 1);
+            fechaFin = new Date(hoy.getFullYear(), 11, 31);
+            rangoTexto = `${anioHoy}`;
+            break;
     }
+    
+    // Actualizar el rango de fechas en el encabezado
+    document.getElementById('rango-fechas').textContent = rangoTexto;
+    
+    // Filtrar transacciones en el rango de fechas
+    const transaccionesFiltradas = transacciones.filter(t => {
+        if (t.estado === 'anulada') return false;
+        const fechaTrans = new Date(t.fecha);
+        return fechaTrans >= fechaInicio && fechaTrans <= fechaFin;
+    });
+    
+    // Calcular totales por cliente - CORREGIDO PARA TOMAR DATOS REALES
+    const totalesPorCliente = {};
+    clientesOrden.forEach(cliente => {
+        totalesPorCliente[cliente] = 0;
+    });
+    
+    transaccionesFiltradas.forEach(trans => {
+        // Extraer nombre del cliente y limpiar
+        let cliente = trans.cliente.replace(' Cliente', '').trim();
+        
+        // Buscar coincidencia exacta o parcial en la lista de clientes
+        const clienteMatch = clientesOrden.find(c => 
+            cliente.includes(c) || c.includes(cliente)
+        );
+        
+        if (clienteMatch) {
+            // ✅ CORREGIDO: Convertir importe a número antes de sumar
+            const importeNum = parseFloat(trans.importe) || 0;
+            totalesPorCliente[clienteMatch] += importeNum;
+        }
+    });
+    
+    // Mostrar en tabla
+    const cuerpo = document.getElementById('cuerpo-resumen');
+    cuerpo.innerHTML = '';
+    let totalGeneral = 0;
+    
+    clientesOrden.forEach(cliente => {
+        const importe = totalesPorCliente[cliente] || 0;
+        totalGeneral += importe;
+        
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+            <td class="cliente-fijo">${cliente}</td>
+            <td style="text-align: right;">RD$ ${importe.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+        `;
+        cuerpo.appendChild(fila);
+    });
+    
+    // Fila de total
+    const filaTotal = document.createElement('tr');
+    filaTotal.innerHTML = `
+        <td><strong>TOTAL</strong></td>
+        <td style="text-align: right;"><strong>RD$ ${totalGeneral.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong></td>
+    `;
+    cuerpo.appendChild(filaTotal);
+    
+    // Actualizar fecha de devengo
+    const opcionesFecha = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        timeZoneName: 'short'
+    };
+    const fechaDevengo = new Date().toLocaleString('es-ES', opcionesFecha)
+        .replace('GMT-04:00', 'GMT-04:00')
+        .replace(',', '');
+    document.getElementById('fecha-devengo').textContent = fechaDevengo;
+}
 
     function imprimirResumen() {
         alert('🖨️ Imprimiendo resumen de ventas...\n\nEsta función abrirá el diálogo de impresión.');
@@ -2115,62 +2127,111 @@
 
     // === CREAR/MODIFICAR ESTUDIO CON ENVÍO A PYTHON ===
     function crearEstudio() {
-        const cliente = document.getElementById('cliente').value.trim();
-        const nombre = document.getElementById('direccion').value.trim();
-        const mensaje = document.getElementById('mensaje');
-        const recibo = estudioEditando !== null ? 
-            transacciones[estudioEditando].recibo : numRecibo;
-        const fechaRecibo = document.getElementById('fecha-recibo').value || new Date().toISOString().split('T')[0];
-        const metodoPago = document.getElementById('metodo-pago').value.trim();
+    const cliente = document.getElementById('cliente').value.trim();
+    const nombre = document.getElementById('direccion').value.trim();
+    const numeroAprobacion = document.getElementById('numero-aprobacion').value.trim();
+    const mensaje = document.getElementById('mensaje');
+    const recibo = estudioEditando !== null ? 
+        transacciones[estudioEditando].recibo : numRecibo;
+    const fechaRecibo = document.getElementById('fecha-recibo').value || new Date().toISOString().split('T')[0];
+    const metodoPago = document.getElementById('metodo-pago').value.trim();
 
-        if (!cliente || !nombre) {
-            mensaje.textContent = "⚠️ Complete los campos obligatorios";
-            mensaje.style.color = "#e74c3c";
-            return;
-        }
+    if (!cliente || !nombre) {
+        mensaje.textContent = "⚠️ Complete los campos obligatorios";
+        mensaje.style.color = "#e74c3c";
+        return;
+    }
 
-        // Obtener descripción y calcular importe total
-        let descripcion = "";
-        let importeTotal = 0;
+    // Obtener descripción y calcular importe total
+    let descripcion = "";
+    let importeTotal = 0;
+    
+    document.querySelectorAll('#cuerpo-tabla tr').forEach((fila, index) => {
+        const servicio = fila.cells[2].querySelector('input').value.trim();
+        const desc = fila.cells[3].querySelector('input').value.trim();
+        const cantidad = parseInt(fila.cells[4].querySelector('input').value) || 1;
+        const importe = parseFloat(fila.cells[6].querySelector('input').value) || 0;
         
-        document.querySelectorAll('#cuerpo-tabla tr').forEach((fila, index) => {
-            const servicio = fila.cells[2].querySelector('input').value.trim();
-            const desc = fila.cells[3].querySelector('input').value.trim();
-            const cantidad = parseInt(fila.cells[4].querySelector('input').value) || 1;
-            const importe = parseFloat(fila.cells[6].querySelector('input').value) || 0;
-            
-            if (servicio) {
-                if (index > 0) descripcion += " | ";
-                descripcion += `${servicio}${desc ? ` - ${desc}` : ''}${cantidad > 1 ? ` x${cantidad}` : ''}`;
-            }
-            
-            importeTotal += importe;
-        });
-
-        if (!descripcion) {
-            descripcion = cliente;
+        if (servicio) {
+            if (index > 0) descripcion += " | ";
+            descripcion += `${servicio}${desc ? ` - ${desc}` : ''}${cantidad > 1 ? ` x${cantidad}` : ''}`;
         }
+        
+        importeTotal += importe;
+    });
 
-        const datosEstudio = {
-            nombre_paciente: nombre,
-            descripcion: descripcion,
-            recibo: recibo,
-            institucion: "REMadom",
-            cliente: cliente,
-            fecha: fechaRecibo,
-            importe: importeTotal,
-            metodo_pago: metodoPago
-        };
+    if (!descripcion) {
+        descripcion = cliente;
+    }
 
-        mensaje.textContent = estudioEditando !== null ? 
-            "⏳ Actualizando estudio en DICOX..." : 
-            "⏳ Enviando estudio a DICOX...";
+    const datosEstudio = {
+        nombre_paciente: nombre,
+        descripcion: descripcion,
+        recibo: recibo,
+        institucion: "REMadom",
+        cliente: cliente,
+        fecha: fechaRecibo,
+        importe: importeTotal,
+        metodo_pago: metodoPago,
+        numero_aprobacion: numeroAprobacion,
+    };
+
+    // ✅ DIFERENCIAR ENTRE CREAR Y MODIFICAR
+    if (estudioEditando !== null) {
+        // MODIFICAR estudio existente
+        const estudioId = transacciones[estudioEditando].id;
+        mensaje.textContent = "⏳ Actualizando estudio en DICOX...";
         mensaje.style.color = "#17a2b8";
         
-        // URL del backend en Render (ACTUALIZADA)
-        const PYTHON_API_URL = 'https://plataforma-dicox-backend-v2.onrender.com';
-
-        fetch(`${PYTHON_API_URL}/api/crear-estudio`, {
+        fetch(`https://plataforma-dicox-backend-v2.onrender.com/api/actualizar-estudio/${estudioId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(datosEstudio)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la respuesta del servidor');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // ✅ Actualizar en localStorage
+                const estudios = JSON.parse(localStorage.getItem('estudios_dicox') || '[]');
+                estudios[estudioEditando] = {
+                    ...estudios[estudioEditando],
+                    ...datosEstudio,
+                    id: estudioId,
+                    importe: importeTotal,
+                    fecha_registro: new Date().toISOString()
+                };
+                localStorage.setItem('estudios_dicox', JSON.stringify(estudios));
+                
+                mensaje.textContent = "✅ Estudio actualizado exitosamente";
+                mensaje.style.color = "#28a745";
+                setTimeout(() => {
+                    volverAlMenu();
+                    irAGestion();
+                }, 1000);
+            } else {
+                mensaje.textContent = `❌ Error: ${data.message || 'No se pudo actualizar el estudio'}`;
+                mensaje.style.color = "#dc3545";
+            }
+        })
+        .catch(error => {
+            console.error('✗ Error al actualizar:', error);
+            mensaje.textContent = "⚠️ Error de conexión con DICOX";
+            mensaje.style.color = "#ffc107";
+        });
+        
+    } else {
+        // CREAR nuevo estudio
+        mensaje.textContent = "⏳ Enviando estudio a DICOX...";
+        mensaje.style.color = "#17a2b8";
+        
+        fetch('https://plataforma-dicox-backend-v2.onrender.com/api/crear-estudio', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -2184,103 +2245,95 @@
             return response.json();
         })
         .then(data => {
-    if (data.success) {
-        const estudios = JSON.parse(localStorage.getItem('estudios_dicox') || '[]');
-        
-        if (estudioEditando !== null) {
-            // Modificar estudio existente
-            estudios[estudioEditando] = {
-                id: Date.now(),
-                recibo: recibo,
-                cliente,
-                nombre,
-                fecha: fechaRecibo,
-                fecha_registro: new Date().toISOString(),
-                descripcion: datosEstudio.descripcion,
-                importe: importeTotal,
-                metodo_pago: metodoPago,
-                estado: estudios[estudioEditando].estado || 'pagada'
-            };
-            localStorage.setItem('estudios_dicox', JSON.stringify(estudios));
-            mensaje.textContent = "✅ Estudio actualizado exitosamente";
-            mensaje.style.color = "#28a745";
-            setTimeout(() => {
-                volverAlMenu();
-                irAGestion();
-            }, 1000);
-        } else {
-            // Crear nuevo estudio - USAR EL RECIBO DEVUELTO POR EL BACKEND
-            const nuevoRecibo = data.estudio.recibo;  // ← CORRECTO: usar el recibo del backend
-            
-            estudios.push({
-                id: Date.now(),
-                recibo: nuevoRecibo,
-                cliente,
-                nombre,
-                fecha: fechaRecibo,
-                fecha_registro: new Date().toISOString(),
-                descripcion: datosEstudio.descripcion,
-                importe: importeTotal,
-                metodo_pago: metodoPago,
-                estado: 'pagada'
-            });
-            localStorage.setItem('estudios_dicox', JSON.stringify(estudios));
-            
-            // Actualizar contador local al PRÓXIMO recibo (no incrementar manualmente)
-            numRecibo = parseInt(nuevoRecibo) + 1;
-            localStorage.setItem('recibo_contador', numRecibo);
-            
-            // Limpiar formulario
-            document.getElementById('cliente').value = "";
-            document.getElementById('direccion').value = "";
-            borrarTodasLineas();
-            
-            // Actualizar UI con el PRÓXIMO recibo
-            actualizarUIRecibo();
-            
-            mensaje.textContent = `✅ Estudio #${nuevoRecibo} creado exitosamente`;
-            mensaje.style.color = "#28a745";
-        }
-        console.log("✓ Estudio procesado:", datosEstudio);
-    } else {
-        mensaje.textContent = `❌ Error: ${data.message || 'No se pudo procesar el estudio'}`;
-        mensaje.style.color = "#dc3545";
-    }
-})
+            if (data.success) {
+                const estudios = JSON.parse(localStorage.getItem('estudios_dicox') || '[]');
+                
+                // ✅ USAR EL RECIBO DEVUELTO POR EL BACKEND
+                const nuevoRecibo = data.estudio.recibo;
+                
+                estudios.push({
+                    id: data.estudio.id,
+                    recibo: nuevoRecibo,
+                    cliente,
+                    nombre,
+                    fecha: fechaRecibo,
+                    fecha_registro: new Date().toISOString(),
+                    descripcion: datosEstudio.descripcion,
+                    importe: importeTotal,
+                    metodo_pago: metodoPago,
+                    estado: 'pagada'
+                });
+                localStorage.setItem('estudios_dicox', JSON.stringify(estudios));
+                
+                // Actualizar contador local
+                numRecibo = parseInt(nuevoRecibo) + 1;
+                localStorage.setItem('recibo_contador', numRecibo);
+                
+                // Limpiar formulario
+                document.getElementById('cliente').value = "";
+                document.getElementById('direccion').value = "";
+                borrarTodasLineas();
+                
+                // Actualizar UI
+                actualizarUIRecibo();
+                
+                mensaje.textContent = `✅ Estudio #${nuevoRecibo} creado exitosamente`;
+                mensaje.style.color = "#28a745";
+            } else {
+                mensaje.textContent = `❌ Error: ${data.message || 'No se pudo procesar el estudio'}`;
+                mensaje.style.color = "#dc3545";
+            }
+        })
         .catch(error => {
             console.error('✗ Error al enviar a Python:', error);
             mensaje.textContent = "⚠️ Error de conexión con DICOX";
             mensaje.style.color = "#ffc107";
         });
     }
+}
 
     // === GESTIÓN DE TRANSACCIONES ===
     function cargarTransacciones() {
-        // URL CORREGIDA (sin espacios al final)
-        fetch('https://plataforma-dicox-backend-v2.onrender.com/api/estudios-pendientes')
-            .then(response => {
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                return response.json();
-            })
-            .then(data => {
-               if (data.success && data.estudios) {
-                   localStorage.setItem('estudios_dicox', JSON.stringify(data.estudios));
-                   transacciones = data.estudios;
-                   mostrarTransacciones(transacciones);
-                   actualizarResumen();
-                   console.log("✅ Transacciones cargadas desde backend global");
-               } else {
-                   throw new Error('Respuesta inválida del backend');
-               }
-            })
-            .catch(error => {
-                console.error("❌ Error al cargar transacciones:", error);
-                transacciones = JSON.parse(localStorage.getItem('estudios_dicox') || '[]');
+    // ✅ PRESERVAR ESTADOS EXISTENTES DE LOCALSTORAGE
+    const datosLocales = JSON.parse(localStorage.getItem('estudios_dicox') || '[]');
+    const mapaEstados = {};
+    datosLocales.forEach(estudio => {
+        if (estudio.recibo) {
+            mapaEstados[estudio.recibo] = estudio.estado || 'pagada';
+        }
+    });
+    
+    fetch('https://plataforma-dicox-backend-v2.onrender.com/api/estudios-pendientes')
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            if (data.success && data.estudios) {
+                // ✅ FUSIONAR: Mantener estado de localStorage si existe
+                const estudiosConEstado = data.estudios.map(estudio => {
+                    estudio.estado = mapaEstados[estudio.recibo] || 'pagada';
+                    return estudio;
+                });
+                
+                localStorage.setItem('estudios_dicox', JSON.stringify(estudiosConEstado));
+                transacciones = estudiosConEstado;
                 mostrarTransacciones(transacciones);
                 actualizarResumen();
-                alert("⚠️ Usando datos en caché. Verifica tu conexión a internet.");
-            });
-    }
+                console.log("✅ Transacciones cargadas (estados preservados)");
+            } else {
+                throw new Error('Respuesta inválida del backend');
+            }
+        })
+        .catch(error => {
+            console.error("❌ Error al cargar transacciones:", error);
+            // Fallback: usar datos locales completos si falla el backend
+            transacciones = datosLocales;
+            mostrarTransacciones(transacciones);
+            actualizarResumen();
+            alert("⚠️ Usando datos en caché. Verifica tu conexión a internet.");
+        });
+}
 
     function mostrarTransacciones(lista) {
         const cuerpo = document.getElementById('cuerpo-transacciones');
@@ -2325,16 +2378,21 @@
                     <div class="acciones-contenedor">
                         <a href="#" class="btn-accion-simple" onclick="event.stopPropagation(); editarTransaccion(${index})">Ver/Editar</a>
                         <div class="dropdown-acciones">
-                            <button class="dropdown-btn" onclick="event.stopPropagation(); toggleDropdown(event, this)">▼</button>
-                            <div class="dropdown-content">
-    <div class="dropdown-item imprimir" onclick="event.stopPropagation(); imprimirReciboIndividual(${index})">
-        Imprimir
-    </div>
-    <div class="dropdown-item anular" onclick="event.stopPropagation(); anularTransaccion(${index})">
-        Anular
-    </div>
-    <div class="dropdown-item eliminar" onclick="event.stopPropagation(); eliminarTransaccion(${index})">
-        Eliminar
+    <button class="dropdown-btn" 
+            onclick="event.stopPropagation(); toggleDropdown(event, this)" 
+            style="background:none;border:none;cursor:pointer;padding:0 4px;font-size:14px;color:black;transition:color 0.2s;vertical-align:middle;line-height:3;position:relative;top:-8px;"
+            onmouseover="this.style.color='#0d47a1'" 
+            onmouseout="this.style.color='black'">▼</button>
+    <div class="dropdown-content">
+        <div class="dropdown-item imprimir" onclick="event.stopPropagation(); imprimirReciboIndividual(${index})">
+            Imprimir
+        </div>
+        <div class="dropdown-item anular" onclick="event.stopPropagation(); anularTransaccion(${index})">
+            Anular
+        </div>
+        <div class="dropdown-item eliminar" onclick="event.stopPropagation(); eliminarTransaccion(${index})">
+            Eliminar
+        </div>
     </div>
 </div>
                         </div>
@@ -2440,13 +2498,39 @@
     }
 
     function anularTransaccion(index) {
-        if (confirm('¿Estás seguro de que deseas anular esta transacción?')) {
-            transacciones[index].estado = 'anulada';
-            localStorage.setItem('estudios_dicox', JSON.stringify(transacciones));
-            cargarTransacciones();
-            alert('✅ Transacción anulada exitosamente');
+    if (confirm('¿Estás seguro de que deseas anular esta transacción?')) {
+        // Establecer estado ANTES de guardar
+        transacciones[index].estado = 'anulada';
+        
+        // Guardar en localStorage
+        localStorage.setItem('estudios_dicox', JSON.stringify(transacciones));
+        
+        // Actualizar en backend si existe ID
+        const estudio = transacciones[index];
+        if (estudio.id) {
+            fetch(`https://plataforma-dicox-backend-v2.onrender.com/api/marcar-procesado/${estudio.id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('✅ Estudio anulado en backend');
+                } else {
+                    console.warn('⚠️ No se pudo anular en backend');
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error al anular en backend:', error);
+            });
         }
+        
+        // Recargar y mostrar mensaje
+        cargarTransacciones();
+        alert('✅ Transacción anulada exitosamente');
     }
+}
 
     function eliminarTransaccion(index) {
         if (confirm('⚠️ ¿Estás seguro de que deseas ELIMINAR permanentemente esta transacción?\n\nEsta acción no se puede deshacer.')) {
@@ -2693,7 +2777,7 @@
 <body>
     <div class="header">
         <h1>RESONANCIA MAGNÉTICA DOMINICANA, S.R.L.</h1>
-        <div class="subtitle">Reporte de Transacciones de Venta</div>
+        <div class="subtitle">Reporte de Transacciones de Efectivo</div>
         <div class="fecha">Generado el: ${new Date().toLocaleDateString('es-DO', { 
             weekday: 'long', 
             year: 'numeric', 
@@ -2973,6 +3057,8 @@
         var nombrePaciente = document.getElementById('direccion') ? document.getElementById('direccion').value.trim() : '';
         var recibo = document.getElementById('numero-recibo').value.trim() || 'N/A';
         var fechaInput = document.getElementById('fecha-recibo').value || '';
+        var metodoPago = document.getElementById('metodo-pago').value.trim() || 'N/A';
+        var numeroAprobacion = document.getElementById('numero-aprobacion').value.trim() || '';
         
         // Formatear fecha a DD/MM/AAAA
         var fechaFormateada = 'N/A';
@@ -3043,7 +3129,7 @@
         // Generar contenido HTML SIN TEMPLATE LITERALS (concatenación segura)
         var contenido = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Recibo de Ingreso - DICOX</title>' +
             '<style>' +
-            '*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:40px;background:white;color:#000;line-height:1.5}.encabezado{text-align:center;margin-bottom:25px;border-bottom:3px solid #0d47a1;padding-bottom:15px}.encabezado h1{font-size:26px;font-weight:800;color:#0d47a1;letter-spacing:1px;margin-bottom:8px}.encabezado h2{font-size:20px;font-weight:700;color:#1976d2;margin-top:5px}.datos-recibo{display:flex;justify-content:space-between;margin:25px 0 20px;font-size:14px;padding:15px;background:#f8f9fa;border-radius:8px;border-left:4px solid #0d47a1}.bloque-dato{margin-bottom:8px}.etiqueta{font-weight:700;color:#0d47a1;margin-bottom:3px;font-size:13px}.valor{font-weight:600;color:#2c3e50;font-size:15px}table{width:100%;border-collapse:collapse;margin:25px 0;box-shadow:0 2px 8px rgba(0,0,0,0.08)}th{background:linear-gradient(to bottom,#e3f2fd,#bbdefb);color:#0d47a1;font-weight:700;padding:10px 8px;text-align:left;border:1px solid #90caf9;font-size:12px;text-transform:uppercase;letter-spacing:0.5px}td{padding:8px;border:1px solid #e0e0e0;font-size:13px;color:#424242}tr:nth-child(even){background-color:#f8f9fa}tr:hover{background-color:#e3f2fd}.totales{margin-top:30px;text-align:right;padding:20px;background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:10px;border:1px solid #90caf9;max-width:350px;float:right;box-shadow:0 2px 10px rgba(0,0,0,0.08)}.total-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #90caf9}.total-item:last-child{border-bottom:none;margin-top:10px;padding-top:12px;font-weight:700;font-size:16px;color:#0d47a1;border-top:2px solid #0d47a1}.pie{margin-top:40px;text-align:center;padding-top:15px;border-top:1px solid #ddd;color:#6c757d;font-size:12px}@media print{body{padding:20px}.no-imprimir{display:none}}</style>' +
+            '*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:40px;background:white;color:#000;line-height:1.5}.encabezado{text-align:center;margin-bottom:25px;border-bottom:3px solid #0d47a1;padding-bottom:15px}.encabezado h1{font-size:26px;font-weight:800;color:#0d47a1;letter-spacing:1px;margin-bottom:8px}.encabezado h2{font-size:20px;font-weight:700;color:#1976d2;margin-top:5px}.datos-recibo{display:flex;justify-content:space-between;margin:25px 0 20px;font-size:14px;padding:15px;background:#f8f9fa;border-radius:8px;border-left:4px solid #0d47a1}.bloque-dato{margin-bottom:8px}.etiqueta{font-weight:700;color:#0d47a1;margin-bottom:3px;font-size:13px}.valor{font-weight:600;color:#2c3e50;font-size:15px}.metodo-pago{font-size:12px!important;color:#6c757d!important;margin-top:5px!important;font-weight:normal!important}.numero-aprobacion{font-size:14px!important;color:#0d47a1!important;font-weight:bold!important;margin-top:8px!important;padding-top:8px!important;border-top:1px dashed #0d47a1!important}table{width:100%;border-collapse:collapse;margin:25px 0;box-shadow:0 2px 8px rgba(0,0,0,0.08)}th{background:linear-gradient(to bottom,#e3f2fd,#bbdefb);color:#0d47a1;font-weight:700;padding:10px 8px;text-align:left;border:1px solid #90caf9;font-size:12px;text-transform:uppercase;letter-spacing:0.5px}td{padding:8px;border:1px solid #e0e0e0;font-size:13px;color:#424242}tr:nth-child(even){background-color:#f8f9fa}tr:hover{background-color:#e3f2fd}.totales{margin-top:30px;text-align:right;padding:20px;background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:10px;border:1px solid #90caf9;max-width:350px;float:right;box-shadow:0 2px 10px rgba(0,0,0,0.08)}.total-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #90caf9}.total-item:last-child{border-bottom:none;margin-top:10px;padding-top:12px;font-weight:700;font-size:16px;color:#0d47a1;border-top:2px solid #0d47a1}.pie{margin-top:40px;text-align:center;padding-top:15px;border-top:1px solid #ddd;color:#6c757d;font-size:12px}@media print{body{padding:20px}.no-imprimir{display:none}}</style>' +
             '</head><body>' +
             '<div class="encabezado">' +
             '<h1>RESONANCIA MAGNETICA DOMINICANA, SRL</h1>' +
@@ -3052,12 +3138,14 @@
             '<div class="datos-recibo">' +
             '<div class="bloque-dato">' +
                 '<div class="etiqueta">FACTURAR A</div>' +
-                '<div class="valor">' + cliente + '</div>' +
-                (nombrePaciente ? '<div style="margin-top:5px;font-weight:600;color:#2c3e50;font-size:14px;">' + nombrePaciente + '</div>' : '') +
+                (nombrePaciente ? '<div class="valor" style="font-size:16px;font-weight:700;color:#0d47a1;margin-bottom:3px;">' + nombrePaciente + '</div>' : '') +
+                '<div class="valor" style="font-size:14px;color:#424242;">' + cliente + '</div>' +
+                (numeroAprobacion ? '<div class="valor numero-aprobacion">N.° de Aprobación: ' + numeroAprobacion + '</div>' : '') +
             '</div>' +
             '<div class="bloque-dato" style="text-align:right;">' +
-            '<div class="etiqueta">RECIBO N.&ordm;</div><div class="valor">' + recibo + '</div>' +
-            '<div class="etiqueta" style="margin-top:8px;">FECHA</div><div class="valor">' + fechaFormateada + '</div>' +
+                (metodoPago !== 'N/A' ? '<div class="valor metodo-pago">Método de pago: ' + metodoPago + '</div>' : '') +
+                '<div class="etiqueta">RECIBO N.&ordm;</div><div class="valor">' + recibo + '</div>' +
+                '<div class="etiqueta" style="margin-top:8px;">FECHA</div><div class="valor">' + fechaFormateada + '</div>' +
             '</div></div>' +
             '<table><thead><tr>' +
             '<th>#</th><th>Fecha</th><th>Prodct/Servicio</th><th>Descrp</th><th>CANT.</th><th>Tarifa</th><th>Importe</th>' +
@@ -3091,7 +3179,7 @@
     function imprimirReciboIndividual(index) {
     try {
         // Obtener el estudio desde el array global
-        const estudio = transacciones[index];
+        var estudio = transacciones[index];
         if (!estudio) {
             alert('❌ Error: Estudio no encontrado');
             console.error('[IMPRESIÓN] Estudio no encontrado en índice:', index);
@@ -3099,240 +3187,83 @@
         }
         
         // Formatear fecha a DD/MM/AAAA
-        let fechaFormateada = 'N/A';
+        var fechaFormateada = 'N/A';
         if (estudio.fecha) {
-            const parts = estudio.fecha.split('-');
+            var parts = estudio.fecha.split('-');
             if (parts.length === 3) {
-                fechaFormateada = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                fechaFormateada = parts[2] + '/' + parts[1] + '/' + parts[0];
             }
         }
         
         // Extraer nombre del cliente (sin " Cliente")
-        const clienteNombre = estudio.cliente.replace(' Cliente', '');
+        var clienteNombre = estudio.cliente.replace(' Cliente', '');
         
         // Obtener nombre del paciente (prioridad: nombre_paciente > nombre)
-        const nombrePaciente = estudio.nombre_paciente || estudio.nombre || 'N/A';
+        var nombrePaciente = estudio.nombre_paciente || estudio.nombre || 'N/A';
+        
+        // Obtener método de pago y número de aprobación
+        var metodoPago = estudio.metodo_pago || 'N/A';
+        var numeroAprobacion = estudio.numero_aprobacion || '';
         
         // Formatear importe
-        const importe = parseFloat(estudio.importe) || 0;
-        const importeFormateado = importe.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        var importe = parseFloat(estudio.importe) || 0;
+        var importeFormateado = importe.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         
-        // Generar contenido HTML para impresión
-        const contenido = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>Recibo de Ingreso - DICOX</title>
-            <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body { 
-                    font-family: 'Segoe UI', 'Arial', sans-serif; 
-                    padding: 40px; 
-                    background: white; 
-                    color: #000;
-                    line-height: 1.5;
-                }
-                .encabezado {
-                    text-align: center;
-                    margin-bottom: 25px;
-                    border-bottom: 3px solid #0d47a1;
-                    padding-bottom: 15px;
-                }
-                .encabezado h1 {
-                    font-size: 26px;
-                    font-weight: 800;
-                    color: #0d47a1;
-                    letter-spacing: 1px;
-                    margin-bottom: 8px;
-                }
-                .encabezado h2 {
-                    font-size: 20px;
-                    font-weight: 700;
-                    color: #1976d2;
-                    margin-top: 5px;
-                }
-                .datos-recibo {
-                    display: flex;
-                    justify-content: space-between;
-                    margin: 25px 0 20px;
-                    font-size: 14px;
-                    padding: 15px;
-                    background: #f8f9fa;
-                    border-radius: 8px;
-                    border-left: 4px solid #0d47a1;
-                }
-                .bloque-dato {
-                    margin-bottom: 8px;
-                }
-                .etiqueta {
-                    font-weight: 700;
-                    color: #0d47a1;
-                    margin-bottom: 3px;
-                    font-size: 13px;
-                }
-                .valor {
-                    font-weight: 600;
-                    color: #2c3e50;
-                    font-size: 15px;
-                }
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin: 25px 0;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-                }
-                th {
-                    background: linear-gradient(to bottom, #e3f2fd, #bbdefb);
-                    color: #0d47a1;
-                    font-weight: 700;
-                    padding: 10px 8px;
-                    text-align: left;
-                    border: 1px solid #90caf9;
-                    font-size: 12px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-                td {
-                    padding: 8px;
-                    border: 1px solid #e0e0e0;
-                    font-size: 13px;
-                    color: #424242;
-                }
-                tr:nth-child(even) {
-                    background-color: #f8f9fa;
-                }
-                .totales {
-                    margin-top: 30px;
-                    text-align: right;
-                    padding: 20px;
-                    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-                    border-radius: 10px;
-                    border: 1px solid #90caf9;
-                    max-width: 350px;
-                    float: right;
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-                }
-                .total-item {
-                    display: flex;
-                    justify-content: space-between;
-                    padding: 6px 0;
-                    border-bottom: 1px dashed #90caf9;
-                }
-                .total-item:last-child {
-                    border-bottom: none;
-                    margin-top: 10px;
-                    padding-top: 12px;
-                    font-weight: 700;
-                    font-size: 16px;
-                    color: #0d47a1;
-                    border-top: 2px solid #0d47a1;
-                }
-                .pie {
-                    margin-top: 40px;
-                    text-align: center;
-                    padding-top: 15px;
-                    border-top: 1px solid #ddd;
-                    color: #6c757d;
-                    font-size: 12px;
-                }
-                @media print {
-                    body { padding: 20px; }
-                    .no-imprimir { display: none; }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="encabezado">
-                <h1>RESONANCIA MAGNETICA DOMINICANA, SRL</h1>
-                <h2>RECIBO DE INGRESO</h2>
-            </div>
-            
-            <div class="datos-recibo">
-                <div class="bloque-dato">
-                    <div class="etiqueta">FACTURAR A</div>
-                    <div class="valor">${clienteNombre}</div>
-                    <div class="valor" style="margin-top:5px;font-weight:600;color:#2c3e50;font-size:14px;">${nombrePaciente}</div>
-                </div>
-                <div class="bloque-dato" style="text-align:right;">
-                    <div class="etiqueta">RECIBO N.º</div>
-                    <div class="valor">${estudio.recibo}</div>
-                    <div class="etiqueta" style="margin-top:8px;">FECHA</div>
-                    <div class="valor">${fechaFormateada}</div>
-                </div>
-            </div>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Fecha</th>
-                        <th>Prodct/Servicio</th>
-                        <th>Descrp</th>
-                        <th>CANT.</th>
-                        <th>Tarifa</th>
-                        <th>Importe</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="text-align:center;padding:6px;">1</td>
-                        <td style="padding:6px;">${fechaFormateada}</td>
-                        <td style="padding:6px;">Servicio Médico</td>
-                        <td style="padding:6px;">${estudio.descripcion || 'Sin descripción'}</td>
-                        <td style="text-align:center;padding:6px;">1</td>
-                        <td style="text-align:right;padding:6px;">RD$${importeFormateado}</td>
-                        <td style="text-align:right;padding:6px;font-weight:bold;color:#28a745;">RD$${importeFormateado}</td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <div class="totales">
-                <div class="total-item">
-                    <span>Total:</span>
-                    <span>RD$${importeFormateado}</span>
-                </div>
-                <div class="total-item">
-                    <span>Saldo pendiente:</span>
-                    <span>RD$0.00</span>
-                </div>
-            </div>
-            
-            <div class="pie">
-                ✅ Recibo generado desde Sistema DICOX - Plataforma de Gestión Médica<br>
-                ${new Date().toLocaleDateString('es-DO', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                })}
-            </div>
-            
-            <script>
-                window.onload = function() {
-                    setTimeout(function() {
-                        window.print();
-                    }, 500);
-                };
-            <\/script>
-        </body>
-        </html>
-        `;
+        // Generar contenido HTML SIN TEMPLATE LITERALS (concatenación segura)
+        var contenido = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Recibo de Ingreso - DICOX</title>' +
+            '<style>' +
+            '*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:40px;background:white;color:#000;line-height:1.5}.encabezado{text-align:center;margin-bottom:25px;border-bottom:3px solid #0d47a1;padding-bottom:15px}.encabezado h1{font-size:26px;font-weight:800;color:#0d47a1;letter-spacing:1px;margin-bottom:8px}.encabezado h2{font-size:20px;font-weight:700;color:#1976d2;margin-top:5px}.datos-recibo{display:flex;justify-content:space-between;margin:25px 0 20px;font-size:14px;padding:15px;background:#f8f9fa;border-radius:8px;border-left:4px solid #0d47a1}.bloque-dato{margin-bottom:8px}.etiqueta{font-weight:700;color:#0d47a1;margin-bottom:3px;font-size:13px}.valor{font-weight:600;color:#2c3e50;font-size:15px}.metodo-pago{font-size:12px!important;color:#6c757d!important;margin-top:5px!important;font-weight:normal!important}.numero-aprobacion{font-size:14px!important;color:#0d47a1!important;font-weight:bold!important;margin-top:8px!important;padding-top:8px!important;border-top:1px dashed #0d47a1!important}table{width:100%;border-collapse:collapse;margin:25px 0;box-shadow:0 2px 8px rgba(0,0,0,0.08)}th{background:linear-gradient(to bottom,#e3f2fd,#bbdefb);color:#0d47a1;font-weight:700;padding:10px 8px;text-align:left;border:1px solid #90caf9;font-size:12px;text-transform:uppercase;letter-spacing:0.5px}td{padding:8px;border:1px solid #e0e0e0;font-size:13px;color:#424242}tr:nth-child(even){background-color:#f8f9fa}tr:hover{background-color:#e3f2fd}.totales{margin-top:30px;text-align:right;padding:20px;background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:10px;border:1px solid #90caf9;max-width:350px;float:right;box-shadow:0 2px 10px rgba(0,0,0,0.08)}.total-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #90caf9}.total-item:last-child{border-bottom:none;margin-top:10px;padding-top:12px;font-weight:700;font-size:16px;color:#0d47a1;border-top:2px solid #0d47a1}.pie{margin-top:40px;text-align:center;padding-top:15px;border-top:1px solid #ddd;color:#6c757d;font-size:12px}@media print{body{padding:20px}.no-imprimir{display:none}}</style>' +
+            '</head><body>' +
+            '<div class="encabezado">' +
+            '<h1>RESONANCIA MAGNETICA DOMINICANA, SRL</h1>' +
+            '<h2>RECIBO DE INGRESO</h2>' +
+            '</div>' +
+            '<div class="datos-recibo">' +
+            '<div class="bloque-dato">' +
+                '<div class="etiqueta">FACTURAR A</div>' +
+                '<div class="valor" style="font-size:16px;font-weight:700;color:#0d47a1;margin-bottom:3px;">' + nombrePaciente + '</div>' +
+                '<div class="valor" style="font-size:14px;color:#424242;">' + clienteNombre + '</div>' +
+                (numeroAprobacion ? '<div class="valor numero-aprobacion">N.° de Aprobación: ' + numeroAprobacion + '</div>' : '') +
+            '</div>' +
+            '<div class="bloque-dato" style="text-align:right;">' +
+                (metodoPago !== 'N/A' ? '<div class="valor metodo-pago">Método de pago: ' + metodoPago + '</div>' : '') +
+                '<div class="etiqueta">RECIBO N.º</div>' +
+                '<div class="valor">' + estudio.recibo + '</div>' +
+                '<div class="etiqueta" style="margin-top:8px;">FECHA</div>' +
+                '<div class="valor">' + fechaFormateada + '</div>' +
+            '</div></div>' +
+            '<table><thead><tr>' +
+            '<th>#</th><th>Fecha</th><th>Prodct/Servicio</th><th>Descrp</th><th>CANT.</th><th>Tarifa</th><th>Importe</th>' +
+            '</tr></thead><tbody>' +
+            '<tr><td style="text-align:center;padding:6px;">1</td>' +
+            '<td style="padding:6px;">' + fechaFormateada + '</td>' +
+            '<td style="padding:6px;">Servicio Médico</td>' +
+            '<td style="padding:6px;">' + (estudio.descripcion || 'Sin descripción') + '</td>' +
+            '<td style="text-align:center;padding:6px;">1</td>' +
+            '<td style="text-align:right;padding:6px;">RD$' + importeFormateado + '</td>' +
+            '<td style="text-align:right;padding:6px;font-weight:bold;color:#28a745;">RD$' + importeFormateado + '</td></tr>' +
+            '</tbody></table>' +
+            '<div class="totales">' +
+            '<div class="total-item"><span>Total:</span><span>RD$' + importeFormateado + '</span></div>' +
+            '<div class="total-item"><span>Saldo pendiente:</span><span>RD$0.00</span></div>' +
+            '</div>' +
+            '<div class="pie">&#10004; Recibo generado desde Sistema DICOX - Plataforma de Gesti&oacute;n M&eacute;dica<br>' +
+            new Date().toLocaleDateString('es-DO', {weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}) +
+            '</div>' +
+            '<script>window.onload=function(){setTimeout(function(){window.print();},500);}<\/script>' +
+            '</body></html>';
         
         // Abrir ventana de impresión
-        const win = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
+        var win = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
         if (!win) {
             alert('⚠️ Por favor, permite las ventanas emergentes para imprimir');
             return;
         }
-        
         win.document.write(contenido);
         win.document.close();
         
-        console.log(`🖨️ Imprimiendo recibo individual #${estudio.recibo}`);
-        alert(`🖨️ Preparando vista previa de impresión para Recibo #${estudio.recibo}...\n\nLa ventana de impresión se abrirá en 1 segundo.`);
+        console.log('🖨️ Imprimiendo recibo individual #' + estudio.recibo);
+        alert('🖨️ Preparando vista previa de impresión para Recibo #' + estudio.recibo + '...\n\nLa ventana de impresión se abrirá en 1 segundo.');
         
     } catch (error) {
         console.error('❌ Error al imprimir recibo individual:', error);
