@@ -2294,15 +2294,6 @@
 
     // === GESTIÓN DE TRANSACCIONES ===
     function cargarTransacciones() {
-    // ✅ PRESERVAR ESTADOS EXISTENTES DE LOCALSTORAGE
-    const datosLocales = JSON.parse(localStorage.getItem('estudios_dicox') || '[]');
-    const mapaEstados = {};
-    datosLocales.forEach(estudio => {
-        if (estudio.recibo) {
-            mapaEstados[estudio.recibo] = estudio.estado || 'pagada';
-        }
-    });
-    
     fetch('https://plataforma-dicox-backend-v2.onrender.com/api/estudios-pendientes')
         .then(response => {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -2310,9 +2301,10 @@
         })
         .then(data => {
             if (data.success && data.estudios) {
-                // ✅ FUSIONAR: Mantener estado de localStorage si existe
+                // ✅ USAR ESTADO DEL BACKEND (no localStorage)
                 const estudiosConEstado = data.estudios.map(estudio => {
-                    estudio.estado = mapaEstados[estudio.recibo] || 'pagada';
+                    // Asegurar que tenga estado (por compatibilidad)
+                    estudio.estado = estudio.estado || 'pagada';
                     return estudio;
                 });
                 
@@ -2320,15 +2312,14 @@
                 transacciones = estudiosConEstado;
                 mostrarTransacciones(transacciones);
                 actualizarResumen();
-                console.log("✅ Transacciones cargadas (estados preservados)");
+                console.log("✅ Transacciones cargadas desde backend (con estado)");
             } else {
                 throw new Error('Respuesta inválida del backend');
             }
         })
         .catch(error => {
             console.error("❌ Error al cargar transacciones:", error);
-            // Fallback: usar datos locales completos si falla el backend
-            transacciones = datosLocales;
+            transacciones = JSON.parse(localStorage.getItem('estudios_dicox') || '[]');
             mostrarTransacciones(transacciones);
             actualizarResumen();
             alert("⚠️ Usando datos en caché. Verifica tu conexión a internet.");
@@ -2499,36 +2490,42 @@
 
     function anularTransaccion(index) {
     if (confirm('¿Estás seguro de que deseas anular esta transacción?')) {
-        // Establecer estado ANTES de guardar
-        transacciones[index].estado = 'anulada';
-        
-        // Guardar en localStorage
-        localStorage.setItem('estudios_dicox', JSON.stringify(transacciones));
-        
-        // Actualizar en backend si existe ID
         const estudio = transacciones[index];
-        if (estudio.id) {
-            fetch(`https://plataforma-dicox-backend-v2.onrender.com/api/marcar-procesado/${estudio.id}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    console.log('✅ Estudio anulado en backend');
-                } else {
-                    console.warn('⚠️ No se pudo anular en backend');
-                }
-            })
-            .catch(error => {
-                console.error('❌ Error al anular en backend:', error);
-            });
-        }
+        const estudioId = estudio.id;
         
-        // Recargar y mostrar mensaje
-        cargarTransacciones();
-        alert('✅ Transacción anulada exitosamente');
+        // ✅ ANULAR EN BACKEND PRIMERO
+        fetch(`https://plataforma-dicox-backend-v2.onrender.com/api/anular-estudio/${estudioId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                console.log('✅ Estudio anulado en backend');
+                
+                // Actualizar estado localmente
+                transacciones[index].estado = 'anulada';
+                localStorage.setItem('estudios_dicox', JSON.stringify(transacciones));
+                
+                // Recargar transacciones para sincronizar con backend
+                cargarTransacciones();
+                
+                alert('✅ Transacción anulada exitosamente');
+            } else {
+                throw new Error(data.message || 'Error al anular estudio');
+            }
+        })
+        .catch(error => {
+            console.error('❌ Error al anular estudio:', error);
+            alert('❌ Error al anular: ' + error.message);
+        });
     }
 }
 
