@@ -35,7 +35,7 @@ def init_db():
         
         print("🔄 Creando tablas...")
         
-        # Tabla de estudios
+        # Tabla de estudios - AGREGAR columna numero_aprobacion
         cur.execute("""
             CREATE TABLE IF NOT EXISTS estudios (
                 id SERIAL PRIMARY KEY,
@@ -47,6 +47,7 @@ def init_db():
                 fecha TEXT,
                 importe TEXT DEFAULT '0',
                 metodo_pago TEXT,
+                numero_aprobacion TEXT DEFAULT '',  -- ← AGREGAR ESTA LÍNEA
                 procesado BOOLEAN DEFAULT FALSE,
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
@@ -222,13 +223,3 @@ def health_check():
     except Exception as e:
         print(f"❌ Error en health_check: {e}")
         return {'status': 'error', 'message': str(e)}
-
-
-
-
-
-
-
-
-
-
