@@ -35,7 +35,7 @@ def init_db():
         
         print("🔄 Creando tablas...")
         
-        # Tabla de estudios - AGREGAR columna numero_aprobacion
+        # Tabla de estudios - AGREGAR columna estado
         cur.execute("""
             CREATE TABLE IF NOT EXISTS estudios (
                 id SERIAL PRIMARY KEY,
@@ -47,7 +47,8 @@ def init_db():
                 fecha TEXT,
                 importe TEXT DEFAULT '0',
                 metodo_pago TEXT,
-                numero_aprobacion TEXT DEFAULT '',  -- ← AGREGAR ESTA LÍNEA
+                numero_aprobacion TEXT DEFAULT '',
+                estado TEXT DEFAULT 'pagada',  -- ← AGREGAR ESTA LÍNEA
                 procesado BOOLEAN DEFAULT FALSE,
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
@@ -181,6 +182,12 @@ def obtener_estudios_pendientes():
         cur.execute("SELECT * FROM estudios ORDER BY id DESC")
         estudios = cur.fetchall()
         conn.close()
+        
+        # Asegurar que todos los estudios tengan estado (por compatibilidad)
+        for estudio in estudios:
+            if 'estado' not in estudio:
+                estudio['estado'] = 'pagada'
+        
         return estudios
     except Exception as e:
         print(f"❌ Error en obtener_estudios_pendientes: {e}")
